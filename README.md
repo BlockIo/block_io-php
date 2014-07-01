@@ -18,7 +18,7 @@ Download and include the block_io.php class:
 Or preferably install via [Composer](https://getcomposer.org/)
 
 
-   "block_io-php/block_io-php": "dev-master"
+   	 "block_io-php/block_io-php": "dev-master"
 
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
