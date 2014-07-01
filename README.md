@@ -12,7 +12,7 @@ First, sign up for an account at [Block.io](https://www.block.io/) and take note
 Download and include the block_io.php class:
 
 
-   require_once 'path/to/block_io.php';
+	 require_once 'path/to/block_io.php';
 
 
 Or preferably install via [Composer](https://getcomposer.org/)
