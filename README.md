@@ -1,13 +1,13 @@
 Block.io PHP
 ===========
 
-PHP wrapper for [Block.io](https://www.block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
+PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
 
 Pull requests accepted and encouraged. The original code, including this README, of which this is a port was written by Jackson Palmer.
 
 ### Usage
 
-First, sign up for an account at [Block.io](https://www.block.io/) and take note of your API key under Account > Dashboard.
+First, sign up for an account at [Block.io](https://block.io/) and take note of your API key under Account > Dashboard.
 
 Download and include the block_io.php class:
 
@@ -42,10 +42,10 @@ Instantiate the class and set your API key. If the API key is valid the set func
    	 }
 
 
-The wrapper abstracts all methods listed at https://www.block.io/api/php using the same interface names. For example, to get your current account balance:
+The wrapper abstracts all methods listed at https://block.io/api/php using the same interface names. For example, to get your current account balance:
 
          $balance =  $block_io->get_balance();
-   	 echo $balance->{'data'}->{'available_balance'};
+         echo $balance->{'data'}->{'available_balance'};
 
 
 To make requests that require parameters (eg. an address label or address to withdraw to), pass through each parameter in an associative array. For example, the request below will withdraw 50 DOGE to the wallet you specify in place of `WALLET-ADDRESS-HERE`:
