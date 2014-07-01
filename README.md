@@ -24,34 +24,34 @@ Or preferably install via [Composer](https://getcomposer.org/)
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
 
 
-   $apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
+	 $apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
 
-   $block_io = new BlockIo();
+   	 $block_io = new BlockIo();
 
-   $validKey = $block_io->set_key($apiKey);
+   	 $validKey = $block_io->set_key($apiKey);
 
-   if($validKey) {
+   	 if($validKey) {
 	      echo "Yay, it's a valid API key\n\n";
 	      $balance = $doge->get_balance();
 	      $address = $doge->get_my_addresses();
 	      $difficulty = $doge->get_difficulty();
 	      $current_block = $doge->get_current_block();
 	      echo "Your current balance is " . $balance->{'data'}->{'available_balance'} . "Ɖ\n";
-   } else {
+   	 } else {
      	      echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
-   }
+   	 }
 
 
 The wrapper abstracts all methods listed at https://www.block.io/api/php using the same interface names. For example, to get your current account balance:
 
-   $balance =  $block_io->get_balance();
-   echo $balance->{'data'}->{'available_balance'};
+         $balance =  $block_io->get_balance();
+   	 echo $balance->{'data'}->{'available_balance'};
 
 
 To make requests that require parameters (eg. an address label or address to withdraw to), pass through each parameter in an associative array. For example, the request below will withdraw 50 DOGE to the wallet you specify in place of `WALLET-ADDRESS-HERE`:
 
 
-   $withdraw = $block_io->withdraw(array('amount' => '50.0', 'payment_address' => 'WALLET-ADDRESS-HERE', 'pin' => 'YOUR SECRET PIN'));
+         $withdraw = $block_io->withdraw(array('amount' => '50.0', 'payment_address' => 'WALLET-ADDRESS-HERE', 'pin' => 'YOUR SECRET PIN'));
 
 
 **Note:** Enforce your own error checking by making status $response->{'status'} == 'success' for every API call.
@@ -63,12 +63,12 @@ To make requests that require parameters (eg. an address label or address to wit
 Set the current API key being used. The key is also validated and the result of this validation is returned.
 
 
-    $validKey = $doge->set_key($apiKey);
-    if($validKey) {
+        $validKey = $doge->set_key($apiKey);
+    	if($validKey) {
 	      echo "Yay, it's a valid API key\n\n";
-    } else {
+    	} else {
               echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
-    }
+    	}
 
 
 #### Get Current API Key
@@ -76,7 +76,7 @@ Set the current API key being used. The key is also validated and the result of 
 Print the current API key being used
 
 
-    echo $block_io->get_key();
+        echo $block_io->get_key();
 
 
 #### Get Balance
@@ -84,7 +84,7 @@ Print the current API key being used
 Print the current balance of your account.
 
 
-    echo $block_io->get_balance()->{'data'}->{'available_balance'};
+        echo $block_io->get_balance()->{'data'}->{'available_balance'};
 
 
 #### Get My Addresses
@@ -92,7 +92,7 @@ Print the current balance of your account.
 Print an array of wallet addresses associated with your account:
 
 
-    $addresses = $block_io->get_my_addresses();
-    print_r($addresses);
+        $addresses = $block_io->get_my_addresses();
+    	print_r($addresses);
 
 
