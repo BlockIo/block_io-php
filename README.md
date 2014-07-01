@@ -11,49 +11,48 @@ First, sign up for an account at [Block.io](https://www.block.io/) and take note
 
 Download and include the block_io.php class:
 
-~
-require_once 'path/to/block_io.php';
-~
+
+   require_once 'path/to/block_io.php';
+
 
 Or preferably install via [Composer](https://getcomposer.org/)
 
-~
-"block_io-php/block_io-php": "dev-master"
-~
+
+   "block_io-php/block_io-php": "dev-master"
+
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
 
-~
-$apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
 
-$block_io = new BlockIo();
+   $apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
 
-$validKey = $block_io->set_key($apiKey);
+   $block_io = new BlockIo();
 
-if($validKey) {
+   $validKey = $block_io->set_key($apiKey);
+
+   if($validKey) {
 	      echo "Yay, it's a valid API key\n\n";
 	      $balance = $doge->get_balance();
 	      $address = $doge->get_my_addresses();
 	      $difficulty = $doge->get_difficulty();
 	      $current_block = $doge->get_current_block();
 	      echo "Your current balance is " . $balance->{'data'}->{'available_balance'} . "Ɖ\n";
-} else {
-  echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
-}
-~
+   } else {
+     	      echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
+   }
+
 
 The wrapper abstracts all methods listed at https://www.block.io/api/php using the same interface names. For example, to get your current account balance:
 
-~
-$balance =  $block_io->get_balance();
-echo $balance->{'data'}->{'available_balance'};
-~
+   $balance =  $block_io->get_balance();
+   echo $balance->{'data'}->{'available_balance'};
+
 
 To make requests that require parameters (eg. an address label or address to withdraw to), pass through each parameter in an associative array. For example, the request below will withdraw 50 DOGE to the wallet you specify in place of `WALLET-ADDRESS-HERE`:
 
-~
-$withdraw = $block_io->withdraw(array('amount' => '50.0', 'payment_address' => 'WALLET-ADDRESS-HERE', 'pin' => 'YOUR SECRET PIN'));
-~
+
+   $withdraw = $block_io->withdraw(array('amount' => '50.0', 'payment_address' => 'WALLET-ADDRESS-HERE', 'pin' => 'YOUR SECRET PIN'));
+
 
 **Note:** Enforce your own error checking by making status $response->{'status'} == 'success' for every API call.
 
@@ -63,37 +62,37 @@ $withdraw = $block_io->withdraw(array('amount' => '50.0', 'payment_address' => '
 
 Set the current API key being used. The key is also validated and the result of this validation is returned.
 
-~
-$validKey = $doge->set_key($apiKey);
-if($validKey) {
+
+    $validKey = $doge->set_key($apiKey);
+    if($validKey) {
 	      echo "Yay, it's a valid API key\n\n";
-} else {
-  echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
-}
-~
+    } else {
+              echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
+    }
+
 
 #### Get Current API Key
 
 Print the current API key being used
 
-~
-echo $block_io->get_key();
-~
+
+    echo $block_io->get_key();
+
 
 #### Get Balance
 
 Print the current balance of your account.
 
-~
-echo $block_io->get_balance()->{'data'}->{'available_balance'};
-~
+
+    echo $block_io->get_balance()->{'data'}->{'available_balance'};
+
 
 #### Get My Addresses
 
 Print an array of wallet addresses associated with your account:
 
-~
-$addresses = $block_io->get_my_addresses();
-print_r($addresses);
-~
+
+    $addresses = $block_io->get_my_addresses();
+    print_r($addresses);
+
 
