@@ -32,11 +32,9 @@ Instantiate the class and set your API key. If the API key is valid the set func
 
    	 if($validKey) {
 	      echo "Yay, it's a valid API key\n\n";
-	      $balance = $doge->get_balance();
-	      $address = $doge->get_my_addresses();
-	      $difficulty = $doge->get_difficulty();
-	      $current_block = $doge->get_current_block();
-	      echo "Your current balance is " . $balance->{'data'}->{'available_balance'} . "Ɖ\n";
+	      $balance = $block_io->get_balance();
+	      $addresses = $block_io->get_my_addresses();
+	      echo "Your available balance is " . $balance->data->available_balance . $balance->data->network . "\n";
    	 } else {
      	      echo "The API Key (" . $block_io->get_key() . ") is not a valid API key";
    	 }
@@ -45,7 +43,7 @@ Instantiate the class and set your API key. If the API key is valid the set func
 The wrapper abstracts all methods listed at https://block.io/api/php using the same interface names. For example, to get your current account balance:
 
          $balance =  $block_io->get_balance();
-         echo $balance->{'data'}->{'available_balance'};
+         echo $balance->data->available_balance;
 
 
 To make requests that require parameters (eg. an address label or address to withdraw to), pass through each parameter in an associative array. For example, the request below will withdraw 50 DOGE to the wallet you specify in place of `WALLET-ADDRESS-HERE`:
