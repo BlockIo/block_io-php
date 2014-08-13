@@ -1,6 +1,9 @@
 Block.io PHP
 ===========
 
+**12/08/14**: Fixed issues with Composer (thanks radical_pi@Freenode!). Added withdraw_from_labels, withdraw_from_addresses.
+
+
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
 
 Pull requests accepted and encouraged. The original code, including this README, of which this is a port was written by Jackson Palmer.
