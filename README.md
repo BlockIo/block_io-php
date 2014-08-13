@@ -1,6 +1,7 @@
 Block.io PHP
 ===========
 
+**Current Release**: 0.2
 **12/08/14**: Fixed issues with Composer (thanks radical_pi@Freenode!). Added withdraw_from_labels, withdraw_from_addresses.
 
 
@@ -21,7 +22,7 @@ Download and include the block_io.php class:
 Or preferably install via [Composer](https://getcomposer.org/)
 
 
-   	 "block_io-php/block_io-php": "dev-master"
+   	 "block_io-php/block_io-php": "0.2"
 
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
