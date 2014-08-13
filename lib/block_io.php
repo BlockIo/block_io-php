@@ -152,16 +152,46 @@ class BlockIo
         return $this->_request('GET', 'get_user_received', $args);
     } 
 
-    // withdraw_from_user
-    public function withdraw_from_user($args = array())
-    {
-        return $this->_request('GET', 'withdraw_from_user', $args);
-    } 
-
     // get_current_price
     public function get_current_price($args = array())
     {
         return $this->_request('GET', 'get_current_price', $args);
     } 
     
+    // withdraw_from_address
+    public function withdraw_from_address($args = array())
+    {
+        return $this->_request('POST', 'withdraw_from_address', $args);
+    } 
+
+    // withdraw_from_addresses
+    public function withdraw_from_addresses($args = array())
+    {
+        return $this->_request('POST', 'withdraw_from_addresses', $args);
+    } 
+
+    // withdraw_from_user
+    public function withdraw_from_user($args = array())
+    {
+        return $this->_request('POST', 'withdraw_from_user', $args);
+    } 
+
+    // withdraw_from_users
+    public function withdraw_from_users($args = array())
+    {
+        return $this->_request('POST', 'withdraw_from_users', $args);
+    } 
+
+    // withdraw_from_label
+    public function withdraw_from_label($args = array())
+    {
+        return $this->_request('POST', 'withdraw_from_label', $args);
+    } 
+
+    // withdraw_from_labels
+    public function withdraw_from_labels($args = array())
+    {
+        return $this->_request('POST', 'withdraw_from_labels', $args);
+    } 
+
 }
