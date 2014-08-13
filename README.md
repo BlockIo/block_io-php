@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 0.2
+**Current Release**: 0.2  
 **12/08/14**: Fixed issues with Composer (thanks radical_pi@Freenode!). Added withdraw_from_labels, withdraw_from_addresses.
 
 
