@@ -6,7 +6,7 @@
     "homepage": "https://block.io",
     "type": "library",
     "autoload": {
-        "psr-0": {"BlockIo": "lib/"}
+    	"files": ["lib/block_io.php"]
     },
     "require": {
         "php": ">=5.2.0"
