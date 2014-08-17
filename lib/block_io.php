@@ -81,9 +81,9 @@ class BlockIo
      */
 
     // get_balance
-    public function get_balance()
+    public function get_balance($args = array())
     {
-        return $this->_request('GET', 'get_balance');
+        return $this->_request('GET', 'get_balance', $args);
     }
 
     // withdraw
