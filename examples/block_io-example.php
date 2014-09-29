@@ -13,49 +13,52 @@
 require_once 'path/to/block_io.php';
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
-$apiKey = 'MyApiKeyForDogecoinEtc.';
+$apiKey = 'YourDogecoinTestnetAPIKey';
+$pin = 'YourSecretPIN';
+$version = 2; // the API version
 
-/* Enter your Secret PIN -- needed for withdrawals. */
-$secretPin = 'MySecretPin';
-
-$block_io = new BlockIo();
-$block_io->set_key($apiKey);
+$block_io = new BlockIo($apiKey, $pin, $version);
 
 echo "*** Getting account balance\n";
-$getBalanceInfo = $block_io->get_balance();
-echo "Status: ".$getBalanceInfo->status."\n";
 
-if ($getBalanceInfo->status == "success"):
-   echo "!!! Using Network: ".$getBalanceInfo->data->network."\n";
-   echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
-else:
-   echo "Fail Reason: ".$getBalanceInfo->data->error_message."\n";
-endif;
+$getBalanceInfo = "";
+
+try {
+    $getBalanceInfo = $block_io->get_balance();
+    
+    echo "!!! Using Network: ".$getBalanceInfo->data->network."\n";
+    echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
+} catch (Exception $e) {
+   echo $e->getMessage() . "\n";
+}
 
 echo "\n\n";
+
 
 echo "*** Create new address\n";
-$getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
-echo "Status: ".$getNewAddressInfo->status."\n";
 
-if ($getNewAddressInfo->status == "success"):
-   echo "New Address: ".$getNewAddressInfo->data->address."\n";
-   echo "Label: ".$getNewAddressInfo->data->label."\n";
-else:
-   echo "Fail Reason: ".$getNewAddressInfo->data->error_message."\n";
-endif;
+$getNewAddressInfo = "";
+
+try {
+    $getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
+
+    echo "New Address: ".$getNewAddressInfo->data->address."\n";
+    echo "Label: ".$getNewAddressInfo->data->label."\n";
+} catch (Exception $e) {
+    echo $e->getMessage() . "\n";
+}
 
 echo "\n\n";
 
-echo "Getting address for Label='shibetime1'\n";
-$getAddressInfo = $block_io->get_address_by_label(array('label' => 'shibetime1'));
-echo "Status: ".$getAddressInfo->status."\n";
+try {
+    echo "Getting address for Label='shibetime1'\n";
+    $getAddressInfo = $block_io->get_address_by_label(array('label' => 'shibetime1'));
+    echo "Status: ".$getAddressInfo->status."\n";
+} catch (Exception $e) {
+    echo $e->getMessage() . "\n";
+}
 
-if ($getAddressInfo->status == "success"):
-   echo "Label has Address: ".$getAddressInfo->data->address."\n";
-else:
-   echo "Fail Reason: ".$getAddressInfo->data->error_message."\n";
-endif;
+echo "Label has Address: " . $block_io->get_address_by_label(array('label' => 'shibetime1'))->data->address . "\n";
 
 echo "\n\n";
 
@@ -67,14 +70,14 @@ echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalan
 
 echo "Withdrawing 1% of Available Amount: ".$sendAmount." ".$getBalanceInfo->data->network."\n";
 
-$withdrawInfo = $block_io->withdraw(array('payment_address' => $getAddressInfo->data->address, 'amount' => $sendAmount, 'pin' => $secretPin));
-echo "Status: ".$withdrawInfo->status."\n";
+try {
+    $withdrawInfo = $block_io->withdraw(array('to_address' => $getAddressInfo->data->address, 'amount' => $sendAmount));
+    echo "Status: ".$withdrawInfo->status."\n";
 
-if ($withdrawInfo->status == "success"):
-   echo "Executed Transaction ID: ".$withdrawInfo->data->txid."\n";
-   echo "Network Fee Charged: ".$withdrawInfo->data->network_fee." ".$withdrawInfo->data->network."\n";
-else:
-   echo "Fail Reason: ".$withdrawInfo->data->error_message."\n";
-endif;
+    echo "Executed Transaction ID: ".$withdrawInfo->data->txid."\n";
+    echo "Network Fee Charged: ".$withdrawInfo->data->network_fee." ".$withdrawInfo->data->network."\n";
+} catch (Exception $e) {
+   echo $e->getMessage() . "\n";
+}
 
 ?>
