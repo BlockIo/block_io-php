@@ -2,17 +2,17 @@ Block.io PHP
 ===========
 
 **Current Release**: 1.0.0
+
 **09/28/14**: Updated for v2 handling.
 
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
-
-Pull requests accepted and encouraged. The original code, including this README, of which this is a port was written by Jackson Palmer.
 
 ### Requirements
 
 This library requires the 'mcrypt' and 'gmp' extensions for PHP. To enable these extensions, see:
    
    [mCrypt Installation Guide](http://php.net/manual/en/mcrypt.installation.php)
+
    [GMP Installation Guide](http://php.net/manual/en/gmp.installation.php)
 
 
@@ -41,7 +41,7 @@ Instantiate the class and set your API key. If the API key is valid the set func
 
    	 $block_io = new BlockIo($apiKey, $pin, $version);
 
-	 echo "Confirmed Balance: " . $block_io->get_balance->data->available_balance . "\n";
+	 echo "Confirmed Balance: " . $block_io->get_balance()->data->available_balance . "\n";
 
 
 The wrapper abstracts all methods listed at https://block.io/api/php using the same interface names. For example, to get your current account balance:
