@@ -59,5 +59,5 @@ To make requests that require parameters (eg. an address label or address to wit
 **Note:** This library throws Exceptions when calls fail. Implement try/catch blocks, and retrieve the Exception message to see details.
 
 
-Please see [Block.io PHP Docs](https://dev.block.io/api/simple/php) for details on available calls.
+Please see [Block.io PHP Docs](https://block.io/api/simple/php) for details on available calls.
 

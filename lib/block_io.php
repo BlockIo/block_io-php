@@ -66,7 +66,7 @@ class BlockIo
     private function _request($path, $args = array(), $method = 'POST')
     {
         // Generate cURL URL
-        $url =  str_replace("API_CALL",$path,"https://dev.block.io/api/v" . $this->version . "/API_CALL/?api_key=") . $this->api_key;
+        $url =  str_replace("API_CALL",$path,"https://block.io/api/v" . $this->version . "/API_CALL/?api_key=") . $this->api_key;
 	$addedData = "";
 
 	foreach ($args as $pkey => $pval)
