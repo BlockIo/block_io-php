@@ -27,7 +27,7 @@ class BlockIo
     private $version;
     private $withdrawal_methods;
 
-    public function __construct($api_key, $pin, $api_version = 1)
+    public function __construct($api_key, $pin, $api_version = 2)
     { // the constructor
       $this->api_key = $api_key;
       $this->pin = $pin;
