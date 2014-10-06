@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.0.1
+**Current Release**: 1.0.2
 
 **09/28/14**: Updated for v2 handling.
 
