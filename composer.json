@@ -1,7 +1,7 @@
 {
     "name": "block_io-php/block_io-php",
     "license": "MIT",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Block.io is the easiest way to create wallets, send, and accept payments through Bitcoin, Litecoin, and Dogecoin. This is its PHP library.",
     "keywords": ["block.io", "dogecoin", "bitcoin", "litecoin", "block_io"],
     "homepage": "https://block.io",
