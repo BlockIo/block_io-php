@@ -3,7 +3,7 @@ Block.io PHP
 
 **Current Release**: 1.0.4
 
-**10/08/14**: Added 3 of 4 MultiSig example.
+**10/08/14**: Added 3 of 4 MultiSig example.  
 **09/28/14**: Updated for v2 handling.
 
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
