@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.0.3
+**Current Release**: 1.0.4
 
 **10/08/14**: Added 3 of 4 MultiSig example.
 **09/28/14**: Updated for v2 handling.
