@@ -1,6 +1,8 @@
 Block.io PHP
 ===========
 
+**Requirement**: PHP 5.5.0 or greater  
+
 **Current Release**: 1.0.4
 
 **10/08/14**: Added 3 of 4 MultiSig example.  
