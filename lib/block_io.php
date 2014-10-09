@@ -99,7 +99,7 @@ class BlockIo
 
 	$json_result = json_decode($result);
 
-	if ($json_result->{'status'} != 'success') { throw new Exception('Failed: ' . $json_result->{'data'}->{'error_message'}); }
+	if ($json_result->status != 'success') { throw new Exception('Failed: ' . $json_result->data->error_message); }
 
         // Spit back the response object or fail
         return $result ? $json_result : false;        
@@ -114,7 +114,7 @@ class BlockIo
 
 	 $response = $this->_request($name,$args);
 
-	 if ($response->{'status'} == 'success' && array_key_exists('reference_id', $response->{'data'}))
+	 if ($response->status == 'success' && array_key_exists('reference_id', $response->data))
 	 { // we have signatures to append
 	 
 	   // get our encryption key ready
@@ -124,37 +124,37 @@ class BlockIo
 	   }
 
 	   // decrypt the data
-	   $passphrase = $this->decrypt($response->{'data'}->{'encrypted_passphrase'}->{'passphrase'}, $this->encryption_key);
+	   $passphrase = $this->decrypt($response->data->encrypted_passphrase->passphrase, $this->encryption_key);
 	   
 	   // extract the key
 	   $key = $this->initKey();
 	   $key->fromPassphrase($passphrase);
 
 	   // is this the right public key?
-	   if ($key->getPublicKey() != $response->{'data'}->{'encrypted_passphrase'}->{'signer_public_key'}) { throw new Exception('Fail: Invalid Secret PIN provided.'); }
+	   if ($key->getPublicKey() != $response->data->encrypted_passphrase->signer_public_key) { throw new Exception('Fail: Invalid Secret PIN provided.'); }
 
 	   // grab inputs
-	   $inputs = &$response->{'data'}->{'inputs'};
+	   $inputs = &$response->data->inputs;
 
 	   // data to sign
 	   foreach ($inputs as &$curInput)
 	   { // for each input
 
-		$data_to_sign = &$curInput->{'data_to_sign'};
+		$data_to_sign = &$curInput->data_to_sign;
 		
-		foreach ($curInput->{'signers'} as &$signer)
+		foreach ($curInput->signers as &$signer)
 		{ // for each signer
 
-		     if ($key->getPublicKey() == $signer->{'signer_public_key'})
+		     if ($key->getPublicKey() == $signer->signer_public_key)
 		     {
-			$signer->{'signed_data'} = $key->signHash($data_to_sign);
+			$signer->signed_data = $key->signHash($data_to_sign);
 		     }		
 
 		}
 		
 	   }
 
-	   $json_string = json_encode($response->{'data'});
+	   $json_string = json_encode($response->data);
 
 	   // let's send the signed data back to Block.io
 	   $response = $this->_request('sign_and_finalize_withdrawal', array('signature_data' => $json_string));

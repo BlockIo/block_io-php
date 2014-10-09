@@ -1,8 +1,6 @@
 Block.io PHP
 ===========
 
-**Requirement**: PHP 5.5.0 or greater  
-
 **Current Release**: 1.0.4
 
 **10/08/14**: Added 3 of 4 MultiSig example.  
@@ -12,12 +10,23 @@ PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dog
 
 ### Requirements
 
-This library requires the 'mcrypt' and 'gmp' extensions for PHP. To enable these extensions, see:
+This library requires the 'mcrypt', 'gmp', and cURL extensions for PHP. To enable these extensions, see:
    
    [mCrypt Installation Guide](http://php.net/manual/en/mcrypt.installation.php)
 
    [GMP Installation Guide](http://php.net/manual/en/gmp.installation.php)
 
+   [cURL Installation Guide](http://php.net/manual/en/curl.installation.php)
+
+### Warning
+
+If you're using Windows, beware that SSL will not function properly, and this library will throw errors.  
+
+To fix the SSL issue on Windows, please do the following:
+
+   Download http://curl.haxx.se/ca/cacert.pem to a directory of your choice  
+   Make PHP use this file to validate Block.io's SSL certificate by adding this line to your php.ini:  
+   	curl.cainfo=c:\path\to\cacert.pem
 
 ### Usage
 
