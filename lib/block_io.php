@@ -14,6 +14,10 @@ if (!extension_loaded('mcrypt')) {
     throw new \Exception('mCrypt extension seems not to be installed');
 }
 
+if (!extension_loaded('curl')) {
+    throw new \Exception('cURL extension seems not to be installed');
+}
+
 class BlockIo
 {
     
@@ -83,6 +87,7 @@ class BlockIo
 	// it's a GET method
 	if ($method == 'GET') { $url .= '&' . $addedData; }
 
+	curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'TLSv1'); // enforce use of TLSv1
         curl_setopt($ch, CURLOPT_URL, $url);
 
 	if ($method == 'POST')
