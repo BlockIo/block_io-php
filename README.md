@@ -42,7 +42,7 @@ Download and include the block_io.php class:
 Or preferably install via [Composer](https://getcomposer.org/)
 
 
-   	 "block_io-php/block_io-php": "1.0.0"
+   	 "block_io-php/block_io-php": "1.0.7"
 
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
