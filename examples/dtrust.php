@@ -11,11 +11,11 @@
 */
 
 <?php
-require_once 'path/to/block_io.php';
+require_once '/path/to/block_io.php';
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
-$apiKey = 'YourDogecoinTestnetAPIKey';
-$pin = 'YourSecretPIN';
+$apiKey = 'DogecoinTestnetAPIKey';
+$pin = 'SecretPin';
 $version = 2; // the API version
 
 $block_io = new BlockIo($apiKey, $pin, $version);
@@ -75,19 +75,21 @@ $response = $block_io->withdraw_from_dtrust_address(array('from_labels' => 'dTru
 
 echo "*** Inputs to sign? " . count($response->data->inputs) . "\n";
 
-// let's sign all the inputs we can
+$refid = $response->data->reference_id;
 
-foreach ($response->data->inputs as &$input) {
-	// iterate over all the inputs
+$counter = 0;
+
+// let's sign all the inputs we can, one key at a time
+foreach ($keys as &$key) {
+
+	foreach ($response->data->inputs as &$input) {
+		// iterate over all the inputs
 	
-	$dataToSign = $input->data_to_sign; // the script sig we need to sign
+		$dataToSign = $input->data_to_sign; // the script sig we need to sign
 
-	foreach ($input->signers as &$signer) {
-		// iterate over all the signers for this input
+		foreach ($input->signers as &$signer) {
+			// iterate over all the signers for this input
 
-		echo "* Signer Needed: " . $signer->signer_public_key . "\n";
-
-		foreach ($keys as &$key) {
 			// find the key that can sign for the signer_public_key
 			if ($key->getPublicKey() == $signer->signer_public_key)
 			{ // we found the key, let's sign the data
@@ -98,17 +100,28 @@ foreach ($response->data->inputs as &$input) {
 			}
 		}
 	}
+
+	// all the data's signed for this public key, let's give it to Block.io
+	$json_string = json_encode($response->data);
+
+    	$r1 = $block_io->sign_transaction(array('signature_data' => $json_string));
+
+	echo "* Send signatures for " . $key->getPublicKey() . "? " . $r1->status . "\n";
+
+	$counter += 1; // we've signed using an additional key, let's note that down 
+
+	// let's just use 3 signatures, since we created an address that required 3 of 4 signatures
+	if ($counter == 3) { break; }
 }
 
-// all the data's signed, let's finalize this withdrawal
-$json_string = json_encode($response->data);
-
 try {
-    $response = $block_io->sign_and_finalize_withdrawal(array('signature_data' => $json_string));
+    // now that everyone's signed the transaction, let's finalize (broadcast) it
 
-    echo "*** Withdrawal Succeeded, Proof Tx ID: " . $response->data->txid . "\n";
+    $response = $block_io->finalize_transaction(array('reference_id' => $refid));
+
+    echo "*** dTrust Withdrawal Proof (Tx ID): " . $response->data->txid . "\n";
 } catch (Exception $e) {
-    echo "Exception: " . $e->getMessage();
+    echo "Exception: " . $e->getMessage() . "\n";
 }
 
 ?>
