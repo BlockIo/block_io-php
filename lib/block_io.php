@@ -1177,7 +1177,7 @@ class BlockKey
                         16
              );
 
-	// implement BIP60
+	// implement BIP62
 
 	$gmpS = gmp_init($S,16);	
 	$N_OVER_TWO = gmp_div($gmpS,2);

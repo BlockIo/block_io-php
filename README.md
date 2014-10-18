@@ -3,7 +3,7 @@ Block.io PHP
 
 **Current Release**: 1.0.8
 
-**18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP60 to prevent transaction malleability.  
+**18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP62 to hinder transaction malleability.  
 **15/10/14**: Enforce use of TLSv1, step away from the vulnerable SSLv3.  
 **10/10/14**: Added 3 of 4 MultiSig example.  
 **09/28/14**: Updated for v2 handling.  
