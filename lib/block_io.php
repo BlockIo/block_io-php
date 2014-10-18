@@ -1180,7 +1180,7 @@ class BlockKey
 	// implement BIP62
 
 	$gmpS = gmp_init($S,16);	
-	$N_OVER_TWO = gmp_div($gmpS,2);
+	$N_OVER_TWO = gmp_div($this->n,2);
 
 	if (gmp_cmp($gmpS,$N_OVER_TWO) > 0)
 	{
