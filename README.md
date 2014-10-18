@@ -1,10 +1,11 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.0.7
+**Current Release**: 1.0.8
 
-**15/08/14**: Enforce use of TLSv1, step away from the vulnerable SSLv3.  
-**10/08/14**: Added 3 of 4 MultiSig example.  
+**18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP60 to prevent transaction malleability.  
+**15/10/14**: Enforce use of TLSv1, step away from the vulnerable SSLv3.  
+**10/10/14**: Added 3 of 4 MultiSig example.  
 **09/28/14**: Updated for v2 handling.  
 
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
