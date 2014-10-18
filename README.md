@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.0.8
+**Current Release**: 1.0.9
 
 **18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP62 to hinder transaction malleability.  
 **15/10/14**: Enforce use of TLSv1, step away from the vulnerable SSLv3.  
@@ -43,7 +43,7 @@ Download and include the block_io.php class:
 Or preferably install via [Composer](https://getcomposer.org/)
 
 
-   	 "block_io-php/block_io-php": "1.0.8"
+   	 "block_io-php/block_io-php": "1.0.9"
 
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
