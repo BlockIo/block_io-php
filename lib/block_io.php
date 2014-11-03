@@ -14,6 +14,10 @@ if (!extension_loaded('mcrypt')) {
     throw new \Exception('mCrypt extension seems not to be installed');
 }
 
+if (!extension_loaded('curl')) {
+    throw new \Exception('cURL extension seems not to be installed');
+}
+
 class BlockIo
 {
     
@@ -83,6 +87,7 @@ class BlockIo
 	// it's a GET method
 	if ($method == 'GET') { $url .= '&' . $addedData; }
 
+	curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'TLSv1'); // enforce use of TLSv1
         curl_setopt($ch, CURLOPT_URL, $url);
 
 	if ($method == 'POST')
@@ -269,6 +274,45 @@ class BlockKey
 
         $this->networkPrefix = '00';
     }
+    
+    public function deterministicGenerateK($message, $key)
+    { // key in hex, message as it is
+    // RFC6979
+    
+	$hash = $message;
+
+	$k = "0000000000000000000000000000000000000000000000000000000000000000";
+	$v = "0101010101010101010101010101010101010101010101010101010101010101";
+
+	// step D
+	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00") . hex2bin($key) . hex2bin($hash), hex2bin($k));
+
+	// step E
+	$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+
+	// step F
+	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("01") . hex2bin($key) . hex2bin($hash), hex2bin($k));
+
+	// step G
+	$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+
+	// H2b
+	$h2b = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+
+	$tNum = gmp_init($h2b,16);
+
+	// step H3
+	while (gmp_sign($tNum) <= 0 || gmp_cmp($tNum, $this->n) >= 0)
+	{
+		$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00"), hex2bin($k));
+		$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+
+		$tNum = gmp_init($v, 16);
+	}
+
+	return gmp_strval($tNum,16);
+    }   
+
 
     /***
      * Convert a number to a compact Int
@@ -982,6 +1026,8 @@ class BlockKey
 	$hashed = hash('sha256', hex2bin($pp));
 	
 	$this->setPrivateKey($hashed);
+
+	return $this;
     }
 
     /***
@@ -1059,6 +1105,15 @@ class BlockKey
             return false;
     }
 
+    function String2Hex($string){
+    	     $hex='';
+    	     for ($i=0; $i < strlen($string); $i++){
+             	 $hex .= dechex(ord($string[$i]));
+	     }
+    	     return $hex;
+    }
+ 
+
     /***
      * Sign a hash with the private key that was set and returns signatures as an array (R,S)
      *
@@ -1079,9 +1134,11 @@ class BlockKey
 
         if(null == $nonce)
         {
-            $random     = openssl_random_pseudo_bytes(256, $cStrong);
-            $random     = $random . microtime(true).rand(100000000000, 1000000000000);
-            $nonce      = gmp_strval(gmp_mod(gmp_init(hash('sha256',$random), 16), $n), 16);
+		// use a deterministic nonce
+		$nonce = $this->deterministicGenerateK($hash, $this->k);
+//            $random     = openssl_random_pseudo_bytes(256, $cStrong);
+//            $random     = $random . microtime(true).rand(100000000000, 1000000000000);
+//            $nonce      = gmp_strval(gmp_mod(gmp_init(hash('sha256',$random), 16), $n), 16);
         }
 
         //first part of the signature (R).
@@ -1090,12 +1147,8 @@ class BlockKey
         $R	= gmp_strval($rPt ['x'], 16);
 
 	// fix DER encoding -- pad it so we don't confuse overflow with being negative
-	if (hexdec($R) >= pow(2,255)) { $R = '00' . $R; }
-
-        while(strlen($R) < 64)
-        {
-            $R = '0' . $R;
-        }
+	if (strlen($R)%2) { $R = '0' . $R; }
+	else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
 
         //second part of the signature (S).
         //S = nonce^-1 (hash + privKey * R) mod p
@@ -1120,18 +1173,19 @@ class BlockKey
                         16
              );
 
+	// implement BIP62
+
+	$gmpS = gmp_init($S,16);	
+	$N_OVER_TWO = gmp_div($this->n,2);
+
+	if (gmp_cmp($gmpS,$N_OVER_TWO) > 0)
+	{
+		$S = gmp_strval(gmp_sub($this->n, $gmpS),16);
+	}
+
 	// fix DER encoding -- pad it so we don't confuse overflow with being negative
-	if (hexdec($S) >= pow(2,255)) { $S = '00' . $S; }
-
-        if(strlen($S)%2)
-        {
-            $S = '0' . $S;
-        }
-
-        if(strlen($R)%2)
-        {
-            $R = '0' . $R;
-        }
+	if (strlen($S)%2) { $S = '0' . $S; }
+	else if (hexdec(substr($S, 0, 1)) >= 8) { $S = '00' . $S; }
 
         return array('R' => $R, 'S' => $S);
     }
@@ -1203,12 +1257,8 @@ class BlockKey
             $flag += $i;
 
             $pubKeyPts = $this->getPubKeyPoints();
-            //echo "\nReal pubKey : \n";
-            //print_r($pubKeyPts);
 
             $recoveredPubKey = $this->getPubKeyWithRS($flag, $R, $S, $hash);
-            //echo "\nRecovered PubKey : \n";
-            //print_r($recoveredPubKey);
 
             if($this->getDerPubKeyWithPubKeyPoints($pubKeyPts, $compressed) == $recoveredPubKey)
             {
@@ -1216,7 +1266,6 @@ class BlockKey
             }
         }
 
-        //echo "Final flag : " . dechex($finalFlag) . "\n";
         if(0 == $finalFlag)
         {
             throw new \Exception('Unable to get a valid signature flag.');
@@ -1413,14 +1462,6 @@ class BlockKey
         $SLength = hexdec(bin2hex(substr($signature, $RLength + 5, 1)));
         $S = bin2hex(substr($signature, $RLength + 6, $SLength));
 
-        //echo "\n\nsignature:\n";
-        //print_r(bin2hex($signature));
-
-        //echo "\n\nR:\n";
-        //print_r($R);
-        //echo "\n\nS:\n";
-        //print_r($S);
-
         return $this->checkSignaturePoints($pubKey, $R, $S, $hash);
     }
 
@@ -1472,6 +1513,16 @@ class BlockKey
         else
             return false;
     }
+}
+
+function strToHex($string)
+{
+    $hex='';
+    for ($i=0; $i < strlen($string); $i++)
+    {
+        $hex .= dechex(ord($string[$i]));
+    }
+    return $hex;
 }
 
 ?>
