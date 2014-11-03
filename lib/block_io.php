@@ -1147,12 +1147,8 @@ class BlockKey
         $R	= gmp_strval($rPt ['x'], 16);
 
 	// fix DER encoding -- pad it so we don't confuse overflow with being negative
-	if (hexdec($R) >= pow(2,255)) { $R = '00' . $R; }
-
-        while(strlen($R) < 64)
-        {
-            $R = '0' . $R;
-        }
+	if (strlen($R)%2) { $R = '0' . $R; }
+	else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
 
         //second part of the signature (S).
         //S = nonce^-1 (hash + privKey * R) mod p
@@ -1188,17 +1184,8 @@ class BlockKey
 	}
 
 	// fix DER encoding -- pad it so we don't confuse overflow with being negative
-	if (hexdec($S) >= pow(2,255)) { $S = '00' . $S; }
-
-        if(strlen($S)%2)
-        {
-            $S = '0' . $S;
-        }
-
-        if(strlen($R)%2)
-        {
-            $R = '0' . $R;
-        }
+	if (strlen($S)%2) { $S = '0' . $S; }
+	else if (hexdec(substr($S, 0, 1)) >= 8) { $S = '00' . $S; }
 
         return array('R' => $R, 'S' => $S);
     }
