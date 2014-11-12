@@ -10,10 +10,10 @@
 */
 
 <?php
-require_once 'path/to/block_io.php';
+require_once '/path/to/block_io.php';
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
-$apiKey = 'YourDogecoinTestnetAPIKey';
+$apiKey = 'YourDogecoinTestnetApiKey';
 $pin = 'YourSecretPIN';
 $version = 2; // the API version
 
@@ -64,7 +64,8 @@ echo "\n\n";
 
 echo "***Send 1% of coins on my account to the address labeled 'shibetime1'\n";
 
-$sendAmount = floatval($getBalanceInfo->data->available_balance)*0.01;
+// Use high decimal precision for any math on coins. They can be 8 decimal places at most, or the system will reject them as valid amounts.
+$sendAmount = bcmul($getBalanceInfo->data->available_balance, '0.0001', 8); 
 
 echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
 
