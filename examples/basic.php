@@ -64,7 +64,7 @@ echo "\n\n";
 
 echo "***Send 1% of coins on my account to the address labeled 'shibetime1'\n";
 
-// Use high decimal precision for any math on coins. They can be 8 decimal places at most, or the system will reject them as valid amounts.
+// Use high decimal precision for any math on coins. They can be 8 decimal places at most, or the system will reject them as invalid amounts.
 $sendAmount = bcmul($getBalanceInfo->data->available_balance, '0.01', 8); 
 
 echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
