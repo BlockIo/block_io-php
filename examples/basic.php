@@ -13,8 +13,8 @@
 require_once '/path/to/block_io.php';
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
-$apiKey = 'YourDogecoinTestnetApiKey';
-$pin = 'YourSecretPIN';
+$apiKey = 'YOUR DOGECOIN TESTNET API KEY';
+$pin = 'SECRET PIN';
 $version = 2; // the API version
 
 $block_io = new BlockIo($apiKey, $pin, $version);
@@ -68,6 +68,12 @@ echo "***Send 1% of coins on my account to the address labeled 'shibetime1'\n";
 $sendAmount = bcmul($getBalanceInfo->data->available_balance, '0.01', 8); 
 
 echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
+
+# detour: let's get an estimate of the network fee we'll need to pay for this transaction
+# use the same parameters you will provide to the withdrawal method get an accurate response
+$estNetworkFee = $block_io->get_network_fee_estimate(array('to_address' => $getAddressInfo->data->address, 'amount' => $sendAmount));
+
+echo "Estimated Network Fee: " . $estNetworkFee->data->estimated_network_fee . " " . $estNetworkFee->data->network . "\n";
 
 echo "Withdrawing 1% of Available Amount: ".$sendAmount." ".$getBalanceInfo->data->network."\n";
 
