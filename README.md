@@ -3,7 +3,7 @@ Block.io PHP
 
 **Current Release**: 1.1.1
 
-**01/09/15**: Added sweep functionality.
+**01/09/15**: Added sweep functionality.  
 **11/03/14**: Fix DER signature encoding. Now stable.  
 **18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP62 to hinder transaction malleability.  
 **15/10/14**: Enforce use of TLSv1, step away from the vulnerable SSLv3.  
