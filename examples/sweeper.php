@@ -9,7 +9,7 @@
 <?php
 require_once '/home/anazir/blockio-libs/php/lib/block_io.php';
 
-$apiKey = '72cd-b7b8-8f23-b83c'; // Your API Key
+$apiKey = 'YOUR API KEY';
 $pin = 'NONE'; // Not Needed
 $version = 2; // the API version
 
