@@ -30,6 +30,7 @@ class BlockIo
     private $encryption_key = "";
     private $version;
     private $withdrawal_methods;
+    private $sweep_methods;
 
     public function __construct($api_key, $pin, $api_version = 2)
     { // the constructor
@@ -38,6 +39,8 @@ class BlockIo
       $this->version = $api_version;
 
       $this->withdrawal_methods = array("withdraw", "withdraw_from_user", "withdraw_from_users", "withdraw_from_label", "withdraw_from_labels", "withdraw_from_address", "withdraw_from_addresses");
+
+      $this->sweep_methods = array("sweep_from_address");
     }
 
     public function __call($name, array $args)
@@ -50,9 +53,11 @@ class BlockIo
 
         if ( in_array($name, $this->withdrawal_methods) )
 	{ // it is a withdrawal method, let's do the client side signing bit
-
 		$response = $this->_withdraw($name, $args);
-
+	}
+	elseif (in_array($name, $this->sweep_methods))
+	{ // it is a sweep method
+	     	$response = $this->_sweep($name, $args);
 	}
 	else
 	{ // it is not a withdrawal method, let it go to Block.io
@@ -163,6 +168,51 @@ class BlockIo
 
 	   // let's send the signed data back to Block.io
 	   $response = $this->_request('sign_and_finalize_withdrawal', array('signature_data' => $json_string));
+	   
+	 }
+
+	 return $response;
+    }
+
+    private function _sweep($name, $args = array())
+    { // sweep method to be called by __call
+
+      	 $key = $this->initKey()->fromWif($args['private_key']);
+
+	 unset($args['private_key']); // remove the key so we don't send it to anyone outside
+
+	 $args['public_key'] = $key->getPublicKey();
+	 
+	 $response = $this->_request($name,$args);
+
+	 if ($response->status == 'success' && array_key_exists('reference_id', $response->data))
+	 { // we have signatures to append
+
+	   // grab inputs
+	   $inputs = &$response->data->inputs;
+
+	   // data to sign
+	   foreach ($inputs as &$curInput)
+	   { // for each input
+
+		$data_to_sign = &$curInput->data_to_sign;
+		
+		foreach ($curInput->signers as &$signer)
+		{ // for each signer
+
+		     if ($key->getPublicKey() == $signer->signer_public_key)
+		     {
+			$signer->signed_data = $key->signHash($data_to_sign);
+		     }		
+
+		}
+		
+	   }
+
+	   $json_string = json_encode($response->data);
+
+	   // let's send the signed data back to Block.io
+	   $response = $this->_request('sign_and_finalize_sweep', array('signature_data' => $json_string));
 	   
 	 }
 
@@ -1030,6 +1080,22 @@ class BlockKey
 	return $this;
     }
 
+    public function fromWif($pp)
+    { // extract the private key from the key in Wallet Import Format
+
+      	 // TODO validation
+
+	 if ($this->validateWifKey($pp) === false) { throw new \Exception("Invalid Private Key provided."); }
+
+	 $fullStr = $this->base58_decode($pp);
+	 $withoutVersion = substr($fullStr,2);
+	 $withoutChecksumAndVersion = substr($withoutVersion,0,64);
+
+	 $this->setPrivateKey($withoutChecksumAndVersion);
+
+	 return $this;
+    }
+
     /***
      * return the private key.
      *
@@ -1095,7 +1161,7 @@ class BlockKey
      */
     public function validateWifKey($wif)
     {
-        $key            = $this->base58_decode($wif, false);
+        $key            = $this->base58_decode($wif, true);
         $length         = strlen($key);
         $firstSha256    = hash('sha256', hex2bin(substr($key, 0, $length - 8)));
         $secondSha256   = hash('sha256', hex2bin($firstSha256));
