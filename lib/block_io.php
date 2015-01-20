@@ -311,6 +311,7 @@ class BlockKey
     public $n;
     public $G;
     public $networkPrefix;
+    public $c = true; //compressed or not
 
     public function __construct()
     {
@@ -992,12 +993,21 @@ class BlockKey
      */
     public function getPubKey()
     {
-        $pubKey = $this->getPubKeyPoints();
+	$pubKey = "";
 
-        if(gmp_strval(gmp_mod(gmp_init($pubKey['y'], 16), gmp_init(2, 10))) == 0)
-            $pubKey  	= '02' . $pubKey['x'];	//if $pubKey['y'] is even
-        else
-            $pubKey  	= '03' . $pubKey['x'];	//if $pubKey['y'] is odd
+	if ($this->c)
+	{ // compressed
+		$pubKey = $this->getPubKeyPoints();
+
+        	if(gmp_strval(gmp_mod(gmp_init($pubKey['y'], 16), gmp_init(2, 10))) == 0)
+            	        $pubKey  	= '02' . $pubKey['x'];	//if $pubKey['y'] is even
+        	else
+			$pubKey  	= '03' . $pubKey['x'];	//if $pubKey['y'] is odd
+	}
+	else
+	{ // uncompressed
+		$pubKey = $this->getUncompressedPubKey();
+	}
 
         return $pubKey;
     }
@@ -1092,6 +1102,15 @@ class BlockKey
 	 $withoutChecksumAndVersion = substr($withoutVersion,0,64);
 
 	 $this->setPrivateKey($withoutChecksumAndVersion);
+
+	 if (substr($withoutVersion,64,2) == '01') 
+	 { // is compressed
+		$this->c = true;
+	 }
+	 else 
+	 { // is not compressed
+		$this->c = false;     
+	 }
 
 	 return $this;
     }
