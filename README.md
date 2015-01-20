@@ -1,8 +1,9 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.1.1
+**Current Release**: 1.1.2
 
+**01/19/15**: Added support for sweeping legacy keys.
 **01/09/15**: Added sweep functionality.  
 **11/03/14**: Fix DER signature encoding. Now stable.  
 **18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP62 to hinder transaction malleability.  
@@ -45,7 +46,7 @@ Download and include the block_io.php class:
 Or preferably install via [Composer](https://getcomposer.org/)
 
 
-   	 "block_io-php/block_io-php": "1.1.1"
+   	 "block_io-php/block_io-php": "1.1.2"
 
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
