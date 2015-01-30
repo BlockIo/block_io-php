@@ -536,26 +536,40 @@ class BlockKey
         return $res;
     }
 
+    public function toWif($network = "BTC")
+    {
+	return $this->getWif($network);
+    }
+
     /***
      * returns the private key under the Wallet Import Format
      *
      * @return String Base58
      * @throws \Exception
      */
-    public function getWif()
+    public function getWif($network = "BTC")
     {
         if(!isset($this->k))
         {
             throw new \Exception('No Private Key was defined');
         }
 
+	$privKeyVersions = array();
+	$privKeyVersion["BTC"] = '80';
+	$privKeyVersion["BTCTEST"] = 'ef';
+	$privKeyVersion["DOGE"] = '9e';
+	$privKeyVersion["DOGETEST"] = 'f1';
+	$privKeyVersion["LTC"] = 'b0';
+	$privKeyVersion["LTCTEST"] = 'ef';
+
         $k              = $this->k;
-        $secretKey      = '80' . $k;
+        $secretKey      = $privKeyVersion[$network] . $k;
+	if ($this->c) { $secretKey .= '01'; } // set the compression flag if we need it
         $firstSha256    = hash('sha256', hex2bin($secretKey));
         $secondSha256   = hash('sha256', hex2bin($firstSha256));
         $secretKey     .= substr($secondSha256, 0, 8);
 
-        return strrev($this->base58_encode($secretKey));
+        return $this->base58_encode($secretKey);
     }
 
     /***
