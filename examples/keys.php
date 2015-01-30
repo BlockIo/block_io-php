@@ -2,7 +2,7 @@
 
    This script converts a given string into a Private Key for a specific address.
    Useful for extracting Private Keys in Wallet Import Format when using Distributed Trust,
-   and mop-py to sweep coins out of the Distributed Trust address without 
+   and mop-py to sweep coins out of the Distributed Trust address without going through Block.io.
 
    IMPORTANT! Specify your own API Key here.
    The network to use for the Wallet Import Format is determined from the API Key used.
