@@ -101,7 +101,7 @@ class BlockIo
 	// it's a GET method
 	if ($method == 'GET') { $url .= '&' . $addedData; }
 
-	curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'TLSv1'); // enforce use of TLSv1
+	curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enforce use of TLSv1.2
         curl_setopt($ch, CURLOPT_URL, $url);
 
 	if ($method == 'POST')
