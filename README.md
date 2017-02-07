@@ -3,7 +3,7 @@ Block.io PHP
 
 **Current Release**: 1.1.4
 
-**02/06/17**: Enforce use of TLSv1.2.
+**02/06/17**: Enforce use of TLSv1.2.  
 **01/29/15**: Added support for getting Wallet Import Format private keys from custom keys.  
 **01/19/15**: Added support for sweeping legacy keys.  
 **01/09/15**: Added sweep functionality.  
