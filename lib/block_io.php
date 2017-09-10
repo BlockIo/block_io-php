@@ -10,10 +10,6 @@ if (!extension_loaded('gmp')) {
     throw new \Exception('GMP extension seems not to be installed');
 }
 
-if (!extension_loaded('mcrypt')) {
-    throw new \Exception('mCrypt extension seems not to be installed');
-}
-
 if (!extension_loaded('curl')) {
     throw new \Exception('cURL extension seems not to be installed');
 }
@@ -272,8 +268,7 @@ class BlockIo
       $padding = 16 - (strlen($data) % 16);
       $data .= str_repeat(chr($padding), $padding);
 
-      $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key,
-                                 $data, MCRYPT_MODE_ECB, NULL);
+      $ciphertext = openssl_encrypt($data, 'AES-256-ECB', $key, true);
 
       $ciphertext_base64 = base64_encode($ciphertext);
 
@@ -298,14 +293,10 @@ class BlockIo
 
 	$ciphertext_dec = base64_decode($b64ciphertext);
     
-        # may remove 00h valued characters from end of plain text
-    	$data_dec = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key,
-                                    $ciphertext_dec, MCRYPT_MODE_ECB, NULL);
+	$data_dec = openssl_decrypt($ciphertext_dec, 'AES-256-ECB', $key, OPENSSL_RAW_DATA, NULL);
 
-    				    $padding = ord($data_dec[strlen($data_dec) - 1]);
-    				    $plaintext_dec = substr($data_dec, 0, -$padding);
+	return $data_dec; // plain text
     
-        return $plaintext_dec;
     }
 
 }

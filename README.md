@@ -1,8 +1,9 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.1.4
+**Current Release**: 1.2.0
 
+**09/10/17**: Replace mCrypt with OpenSSL. PHP5.6+ only.
 **02/06/17**: Enforce use of TLSv1.2.  
 **01/29/15**: Added support for getting Wallet Import Format private keys from custom keys.  
 **01/19/15**: Added support for sweeping legacy keys.  
@@ -17,10 +18,8 @@ PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dog
 
 ### Requirements
 
-This library requires the 'mcrypt', 'gmp', and cURL extensions for PHP. To enable these extensions, see:
+This library requires the 'gmp', and cURL extensions for PHP. To enable these extensions, see:
    
-   [mCrypt Installation Guide](http://php.net/manual/en/mcrypt.installation.php)
-
    [GMP Installation Guide](http://php.net/manual/en/gmp.installation.php)
 
    [cURL Installation Guide](http://php.net/manual/en/curl.installation.php)
@@ -48,7 +47,7 @@ Download and include the block_io.php class:
 Or preferably install via [Composer](https://getcomposer.org/)
 
 
-   	 "block_io-php/block_io-php": "1.1.4"
+   	 "block_io-php/block_io-php": "1.2.0"
 
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
