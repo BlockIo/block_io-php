@@ -31,8 +31,11 @@ If you're using Windows, beware that SSL will not function properly, and this li
 To fix the SSL issue on Windows, please do the following:
 
    Download http://curl.haxx.se/ca/cacert.pem to a directory of your choice  
-   Make PHP use this file to validate Block.io's SSL certificate by adding this line to your php.ini:  
-   	curl.cainfo=c:\path\to\cacert.pem
+   Make PHP use this file to validate Block.io's SSL certificate by adding this line to your php.ini:
+
+    ```ini
+    curl.cainfo=c:\path\to\cacert.pem
+    ```
 
 ### Usage
 
@@ -40,39 +43,40 @@ First, sign up for an account at [Block.io](https://block.io/) and take note of 
 
 Download and include the block_io.php class:
 
-
-	 require_once 'path/to/block_io.php';
-
+```php
+require_once 'path/to/block_io.php';
+```
 
 Or preferably install via [Composer](https://getcomposer.org/)
 
-
-   	 "block_io-php/block_io-php": "1.2.0"
-
+```sh
+composer require block_io-php/block_io-php
+```
 
 Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
 
+```php
+$apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
+$pin = "YOUR SECRET PIN";
+$version = 2; // the API version to use
 
-	 $apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
-	 $pin = "YOUR SECRET PIN";
-	 $version = 2; // the API version to use
+$block_io = new BlockIo($apiKey, $pin, $version);
 
-   	 $block_io = new BlockIo($apiKey, $pin, $version);
-
-	 echo "Confirmed Balance: " . $block_io->get_balance()->data->available_balance . "\n";
-
+echo "Confirmed Balance: " . $block_io->get_balance()->data->available_balance . "\n";
+```
 
 The wrapper abstracts all methods listed at https://block.io/api/php using the same interface names. For example, to get your current account balance:
 
-         $balance = $block_io->get_balance(array('label' => 'default'));
-         echo $balance->data->available_balance . "\n";
-
+```php
+$balance = $block_io->get_balance(array('label' => 'default'));
+echo $balance->data->available_balance . "\n";
+```
 
 To make requests that require parameters (eg. an address label or address to withdraw to), pass through each parameter in an associative array. For example, the request below will withdraw 50 DOGE to the wallet you specify in place of `WALLET-ADDRESS-HERE`:
 
-
-         $withdraw = $block_io->withdraw(array('amount' => '50.0', 'to_address' => 'WALLET-ADDRESS-HERE'));
-
+```php
+$withdraw = $block_io->withdraw(array('amount' => '50.0', 'to_address' => 'WALLET-ADDRESS-HERE'));
+```
 
 **Note:** This library throws Exceptions when calls fail. Implement try/catch blocks, and retrieve the Exception message to see details.
 
