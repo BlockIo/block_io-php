@@ -30,12 +30,12 @@ If you're using Windows, beware that SSL will not function properly, and this li
 
 To fix the SSL issue on Windows, please do the following:
 
-   Download http://curl.haxx.se/ca/cacert.pem to a directory of your choice  
-   Make PHP use this file to validate Block.io's SSL certificate by adding this line to your php.ini:
+Download http://curl.haxx.se/ca/cacert.pem to a directory of your choice  
+Make PHP use this file to validate Block.io's SSL certificate by adding this line to your php.ini:
 
-    ```ini
-    curl.cainfo=c:\path\to\cacert.pem
-    ```
+```ini
+curl.cainfo=c:\path\to\cacert.pem
+```
 
 ### Usage
 
