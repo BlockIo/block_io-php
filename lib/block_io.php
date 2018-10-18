@@ -114,8 +114,6 @@ class BlockIo
 
 	$json_result = json_decode($result);
 
-	if ($json_result->status != 'success') { throw new Exception('Failed: ' . $json_result->data->error_message); }
-
         // Spit back the response object or fail
         return $result ? $json_result : false;        
     }
