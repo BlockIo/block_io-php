@@ -1,8 +1,9 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.2.0
+**Current Release**: 1.2.1
 
+**05/10/19**: Minor updates. Tested for PHP7.x.
 **09/10/17**: Replace mCrypt with OpenSSL. PHP5.6+ only.
 **02/06/17**: Enforce use of TLSv1.2.  
 **01/29/15**: Added support for getting Wallet Import Format private keys from custom keys.  

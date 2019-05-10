@@ -124,8 +124,7 @@ class BlockIo
     private function _withdraw($name, $args = array())
     { // withdraw method to be called by __call
 
-         // add pin for v1
-	 if ($this->version == 1) { $args['pin'] = $this->pin; }
+         unset ($args['pin']); // make sure no inadvertent passing of pin occurs
 
 	 $response = $this->_request($name,$args);
 
