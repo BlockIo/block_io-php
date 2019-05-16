@@ -7,7 +7,7 @@
 */
 
 <?php
-require_once '/home/anazir/blockio-libs/php/lib/block_io.php';
+require_once '/path/to/block_io.php';
 
 $apiKey = 'YOUR API KEY';
 $pin = 'NONE'; // Not Needed
