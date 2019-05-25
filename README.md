@@ -66,6 +66,20 @@ $block_io = new BlockIo($apiKey, $pin, $version);
 echo "Confirmed Balance: " . $block_io->get_balance()->data->available_balance . "\n";
 ```
 
+Socks5 proxy configure.
+
+```php
+$proxy = 'socks5://user:password@localhost:12345';
+$apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
+$pin = "YOUR SECRET PIN";
+$version = 2; // the API version to use
+
+$block_io = new BlockIo($apiKey, $pin, $version, $proxy);
+
+echo "Confirmed Balance: " . $block_io->get_balance()->data->available_balance . "\n";
+
+```
+
 The wrapper abstracts all methods listed at https://block.io/api/php using the same interface names. For example, to get your current account balance:
 
 ```php

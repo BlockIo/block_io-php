@@ -27,12 +27,17 @@ class BlockIo
     private $version;
     private $withdrawal_methods;
     private $sweep_methods;
+    private $proxy = null;
 
-    public function __construct($api_key, $pin, $api_version = 2)
+    public function __construct($api_key, $pin, $api_version = 2, $proxy = null)
     { // the constructor
       $this->api_key = $api_key;
       $this->pin = $pin;
       $this->version = $api_version;
+
+      if(null !== $proxy) {
+        $this->proxy = $proxy;
+      }
 
       $this->withdrawal_methods = array("withdraw", "withdraw_from_user", "withdraw_from_users", "withdraw_from_label", "withdraw_from_labels", "withdraw_from_address", "withdraw_from_addresses");
 
@@ -82,17 +87,21 @@ class BlockIo
 		$addedData .= $pkey . "=" . $pval;
 	}
 
-        // Initiate cURL and set headers/options
-        $ch  = curl_init();
-        
-        // If we run windows, make sure the needed pem file is used
-        if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-        	$pemfile = dirname(realpath(__FILE__)) . DIRECTORY_SEPARATOR . 'cacert.pem';
-        	if(!file_exists($pemfile)) {
-        		throw new Exception("Needed .pem file not found. Please download the .pem file at http://curl.haxx.se/ca/cacert.pem and save it as " . $pemfile);
-        	}        	
-        	curl_setopt($ch, CURLOPT_CAINFO, $pemfile);
-        }
+    // Initiate cURL and set headers/options
+    $ch  = curl_init();
+    
+    // If we run windows, make sure the needed pem file is used
+    if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    	$pemfile = dirname(realpath(__FILE__)) . DIRECTORY_SEPARATOR . 'cacert.pem';
+    	if(!file_exists($pemfile)) {
+    		throw new Exception("Needed .pem file not found. Please download the .pem file at http://curl.haxx.se/ca/cacert.pem and save it as " . $pemfile);
+    	}        	
+    	curl_setopt($ch, CURLOPT_CAINFO, $pemfile);
+    }
+
+    if(null !== $this->proxy) {
+        curl_setopt($ch, CURLOPT_PROXY, $this->proxy);
+    }
 
 	// it's a GET method
 	if ($method == 'GET') { $url .= '&' . $addedData; }
