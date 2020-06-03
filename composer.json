@@ -7,7 +7,7 @@
     "type": "library",
         "require": {
         "php": ">=7.2.0",
-	"ext-gmp": "*",
+        "ext-gmp": "*",
         "ext-curl": "*"
     },
     "autoload": {
