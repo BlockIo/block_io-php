@@ -128,7 +128,7 @@ class BlockIo
 
 	 $response = $this->_request($name,$args);
 
-	 if ($response->status == 'success' && array_key_exists('reference_id', $response->data))
+	 if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
 	 { // we have signatures to append
 	 
 	   // get our encryption key ready
@@ -189,7 +189,7 @@ class BlockIo
 	 
 	 $response = $this->_request($name,$args);
 
-	 if ($response->status == 'success' && array_key_exists('reference_id', $response->data))
+	 if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
 	 { // we have signatures to append
 
 	   // grab inputs
