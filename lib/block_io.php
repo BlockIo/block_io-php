@@ -325,7 +325,7 @@ class BlockKey
         $this->networkPrefix = '00';
     }
     
-    public function deterministicGenerateK($message, $key)
+    public function deterministicGenerateK($message, $key, $extra_entropy)
     { // key in hex, message as it is
     // RFC6979
     
@@ -334,14 +334,19 @@ class BlockKey
 	$k = "0000000000000000000000000000000000000000000000000000000000000000";
 	$v = "0101010101010101010101010101010101010101010101010101010101010101";
 
+	$e = "";
+	if ($extra_entropy > 0) {
+		$e = join(array_reverse(str_split(sprintf("%064s", dechex($extra_entropy)),2)),"");
+	};
+
 	// step D
-	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00") . hex2bin($key) . hex2bin($hash), hex2bin($k));
+	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
 
 	// step E
 	$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
 
 	// step F
-	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("01") . hex2bin($key) . hex2bin($hash), hex2bin($k));
+	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("01") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
 
 	// step G
 	$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
@@ -1224,30 +1229,34 @@ class BlockKey
     {
         $n = $this->n;
         $k = $this->k;
+	$counter = 0;
+	$nonce_not_provided = is_null($nonce);
 
         if(empty($k))
         {
             throw new \Exception('No Private Key was defined');
         }
 
-        if(null == $nonce)
-        {
-		// use a deterministic nonce
-		$nonce = $this->deterministicGenerateK($hash, $this->k);
-//            $random     = openssl_random_pseudo_bytes(256, $cStrong);
-//            $random     = $random . microtime(true).rand(100000000000, 1000000000000);
-//            $nonce      = gmp_strval(gmp_mod(gmp_init(hash('sha256',$random), 16), $n), 16);
-        }
+	do{
+	        if($nonce_not_provided)
+        	{
+			// use a deterministic nonce
+			echo "counter=" . $counter . "\n";
+			$nonce = $this->deterministicGenerateK($hash, $this->k, $counter);
+			$counter = $counter + 1;
+        	}
 
-        //first part of the signature (R).
+        	//first part of the signature (R).
 
-        $rPt = $this->mulPoint($nonce, $this->G);
-        $R	= gmp_strval($rPt ['x'], 16);
+        	$rPt = $this->mulPoint($nonce, $this->G);
+        	$R	= gmp_strval($rPt ['x'], 16);
 
-	// fix DER encoding -- pad it so we don't confuse overflow with being negative
-	if (strlen($R)%2) { $R = '0' . $R; }
-	else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
+		// fix DER encoding -- pad it so we don't confuse overflow with being negative
+		if (strlen($R)%2) { $R = '0' . $R; }
+		else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
 
+	}while($nonce_not_provided && (strlen(hex2bin($R)) > 32 || hexdec(substr($R, 0, 1)) >= 128));
+	
         //second part of the signature (S).
         //S = nonce^-1 (hash + privKey * R) mod p
 
