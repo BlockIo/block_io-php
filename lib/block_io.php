@@ -1254,7 +1254,7 @@ class BlockKey
 		if (strlen($R)%2) { $R = '0' . $R; }
 		else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
 
-	}while($nonce_not_provided && (strlen(hex2bin($R)) > 32 || hexdec(substr($R, 0, 1)) >= 128));
+	}while($nonce_not_provided && (strlen(hex2bin($R)) != 32 || hexdec(substr($R, 0, 1)) >= 128));
 	
         //second part of the signature (S).
         //S = nonce^-1 (hash + privKey * R) mod p
