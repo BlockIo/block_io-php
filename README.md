@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.3.1
+**Current Release**: 1.3.2
 
 **07/01/20**: Use low R signatures by default.  
 **06/02/20**: Replace deprecated array_key_exists. Tested for PHP7.2, PHP7.3, PHP7.4. Support for earlier (EOL) versions of PHP is not guaranteed.  

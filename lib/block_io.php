@@ -1241,7 +1241,6 @@ class BlockKey
 	        if($nonce_not_provided)
         	{
 			// use a deterministic nonce
-			echo "counter=" . $counter . "\n";
 			$nonce = $this->deterministicGenerateK($hash, $this->k, $counter);
 			$counter = $counter + 1;
         	}
