@@ -7,17 +7,17 @@
 */
 
 <?php
-require_once '/path/to/block_io.php';
+require_once '../lib/block_io.php';
 
-$apiKey = 'YOUR API KEY';
+$apiKey = getenv("API_KEY");
 $pin = 'NONE'; // Not Needed
 $version = 2; // the API version
 
 $block_io = new BlockIo($apiKey, $pin, $version);
 
-$from_address = 'FROM ADDRESS';
-$to_address = 'TO ADDRESS';
-$private_key = 'PRIVATE KEY OF FROM_ADDRESS IN WALLET IMPORT FORMAT';
+$from_address = getenv("FROM_ADDRESS");
+$to_address = getenv("TO_ADDRESS");
+$private_key = getenv("PRIVATE_KEY"); // Wallet Import Format (WIF)
 
 // let's sweep the coins from the From Address to the To Address
 

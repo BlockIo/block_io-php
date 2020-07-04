@@ -335,10 +335,9 @@ class BlockKey
 	$v = "0101010101010101010101010101010101010101010101010101010101010101";
 
 	$e = "";
-	if ($extra_entropy > 0) {
-		$e = join(array_reverse(str_split(sprintf("%064s", dechex($extra_entropy)),2)),"");
-	};
 
+	if (!is_null($extra_entropy)) { $e = $extra_entropy; }
+	
 	// step D
 	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
 
@@ -1230,6 +1229,7 @@ class BlockKey
         $n = $this->n;
         $k = $this->k;
 	$counter = 0;
+	$extra_entropy = "";
 	$nonce_not_provided = is_null($nonce);
 
         if(empty($k))
@@ -1241,7 +1241,12 @@ class BlockKey
 	        if($nonce_not_provided)
         	{
 			// use a deterministic nonce
-			$nonce = $this->deterministicGenerateK($hash, $this->k, $counter);
+
+			if ($counter > 0) {
+			   $extra_entropy = implode(array_reverse(str_split(sprintf("%064s", dechex($counter)),2)));
+			}
+			
+			$nonce = $this->deterministicGenerateK($hash, $this->k, $extra_entropy);
 			$counter = $counter + 1;
         	}
 

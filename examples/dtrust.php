@@ -11,11 +11,11 @@
 */
 
 <?php
-require_once '/path/to/block_io.php';
+require_once '../lib/block_io.php';
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
-$apiKey = 'DogecoinTestnetAPIKey';
-$pin = 'SecretPin';
+$apiKey = getenv("API_KEY");
+$pin = getenv("PIN");
 $version = 2; // the API version
 
 $block_io = new BlockIo($apiKey, $pin, $version);
