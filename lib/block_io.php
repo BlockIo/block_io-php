@@ -106,7 +106,13 @@ class BlockIo
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $addedData);
 	}
 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$headers = array(
+    		 'Accept: application/json',
+		 'User-Agent: php:block_io:1.3.x'
+		 );
+
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         // Execute the cURL request
         $result = curl_exec($ch);
