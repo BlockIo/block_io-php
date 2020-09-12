@@ -1,8 +1,9 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.3.3
+**Current Release**: 1.3.4
 
+**08/15/20**: Add cURL headers for requests.  
 **07/03/20**: Use implode() instead of join() to remove PHP7.4 warning.  
 **07/01/20**: Use low R signatures by default.  
 **06/02/20**: Replace deprecated array_key_exists. Tested for PHP7.2, PHP7.3, PHP7.4. Support for earlier (EOL) versions of PHP is not guaranteed.  
