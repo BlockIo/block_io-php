@@ -49,11 +49,11 @@ class BlockIo
 
         if ( in_array($name, $this->withdrawal_methods) )
 	{ // it is a withdrawal method, let's do the client side signing bit
-		$response = $this->_withdraw($name, $args);
+		$response = $this->_internal_withdraw($name, $args);
 	}
 	elseif (in_array($name, $this->sweep_methods))
 	{ // it is a sweep method
-	     	$response = $this->_sweep($name, $args);
+	     	$response = $this->_internal_sweep($name, $args);
 	}
 	else
 	{ // it is not a withdrawal method, let it go to Block.io
@@ -127,7 +127,7 @@ class BlockIo
     }
 
 
-    private function _withdraw($name, $args = array())
+    private function _internal_withdraw($name, $args = array())
     { // withdraw method to be called by __call
 
          unset ($args['pin']); // make sure no inadvertent passing of pin occurs
@@ -184,7 +184,7 @@ class BlockIo
 	 return $response;
     }
 
-    private function _sweep($name, $args = array())
+    private function _internal_sweep($name, $args = array())
     { // sweep method to be called by __call
 
       	 $key = $this->initKey()->fromWif($args['private_key']);

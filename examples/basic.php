@@ -82,6 +82,7 @@ try {
     echo "Status: ".$withdrawInfo->status."\n";
 
     echo "Executed Transaction ID: ".$withdrawInfo->data->txid."\n";
+    echo "Block.io Fee Charged: ".$withdrawInfo->data->blockio_fee." ".$withdrawInfo->data->network."\n";
     echo "Network Fee Charged: ".$withdrawInfo->data->network_fee." ".$withdrawInfo->data->network."\n";
 } catch (Exception $e) {
    echo $e->getMessage() . "\n";

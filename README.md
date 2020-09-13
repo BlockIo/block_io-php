@@ -1,8 +1,9 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.3.4
+**Current Release**: 1.3.5
 
+**09/12/20**: Change _withdraw and _sweep names for further disambiguation from actual API endpoints.  
 **08/15/20**: Add cURL headers for requests.  
 **07/03/20**: Use implode() instead of join() to remove PHP7.4 warning.  
 **07/01/20**: Use low R signatures by default.  
