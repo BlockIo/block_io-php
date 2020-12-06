@@ -270,9 +270,10 @@ class BlockIo
 
       $key = hex2bin($key); // convert the hex into binary
 
-      $padding = 16 - (strlen($data) % 16);
-      $data .= str_repeat(chr($padding), $padding);
-
+      if (strlen($data) % 8 != 0) {
+      	 throw new Exception("Invalid data length: " . strlen($data));
+      }
+      
       $ciphertext = openssl_encrypt($data, 'AES-256-ECB', $key, true);
 
       $ciphertext_base64 = base64_encode($ciphertext);
