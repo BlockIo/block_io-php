@@ -1,0 +1,8 @@
+{
+  "status" : "success",
+  "data" : {
+    "network" : "LTCTEST",
+    "available_balance" : "0.2432256",
+    "pending_received_balance" : "0.0"
+  }
+}

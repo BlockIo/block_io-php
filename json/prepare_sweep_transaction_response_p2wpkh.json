@@ -1,0 +1,35 @@
+{
+  "status": "success",
+  "data": {
+    "network": "LTCTEST",
+    "tx_type": "sweep",
+    "inputs": [
+      {
+        "input_index": 0,
+        "previous_txid": "2e03c387e4e817db6fcd6d37c27bed639e82d08c055cedbff4eeab3108793a83",
+        "previous_output_index": 0,
+        "input_value": "0.00300000",
+        "spending_address": "tltc1qgfkf7dfvuty0q67c4y9zvh0dfvm4nsjr86ltvf"
+      }
+    ],
+    "outputs": [
+      {
+        "output_index": 0,
+        "output_category": "sweep-amount",
+        "output_value": "0.00297160",
+        "receiving_address": "QTLcyTFrH7T6kqUsi1VV2mJVXmX3AmwUNH"
+      }
+    ],
+    "input_address_data": [
+      {
+        "required_signatures": 1,
+        "public_keys": [
+          "021499295873879c280c31fff94845a6153142e76b84a29afc92128d482857ed93"
+        ],
+        "address": "tltc1qgfkf7dfvuty0q67c4y9zvh0dfvm4nsjr86ltvf",
+        "address_type": "P2WPKH"
+      }
+    ],
+    "estimated_tx_size": 142
+  }
+}
