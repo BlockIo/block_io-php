@@ -20,51 +20,51 @@ class BlockIo
     /**
      * Validate the given API key on instantiation
      */
-     
+    
     private $api_key;
     private $pin = "";
     private $encryption_key = "";
     private $version;
     private $withdrawal_methods;
     private $sweep_methods;
-
+    
     public function __construct($api_key, $pin, $api_version = 2)
     { // the constructor
-      $this->api_key = $api_key;
-      $this->pin = $pin;
-      $this->version = $api_version;
-
-      $this->withdrawal_methods = array("withdraw", "withdraw_from_user", "withdraw_from_users", "withdraw_from_label", "withdraw_from_labels", "withdraw_from_address", "withdraw_from_addresses");
-
-      $this->sweep_methods = array("sweep_from_address");
+        $this->api_key = $api_key;
+        $this->pin = $pin;
+        $this->version = $api_version;
+        
+        $this->withdrawal_methods = array("withdraw", "withdraw_from_user", "withdraw_from_users", "withdraw_from_label", "withdraw_from_labels", "withdraw_from_address", "withdraw_from_addresses");
+        
+        $this->sweep_methods = array("sweep_from_address");
     }
-
+    
     public function __call($name, array $args)
     { // method_missing for PHP
-
+        
         $response = "";
-	
-	if (empty($args)) { $args = array(); }
-	else { $args = $args[0]; }
-
+        
+        if (empty($args)) { $args = array(); }
+        else { $args = $args[0]; }
+        
         if ( in_array($name, $this->withdrawal_methods) )
-	{ // it is a withdrawal method, let's do the client side signing bit
-		$response = $this->_internal_withdraw($name, $args);
-	}
-	elseif (in_array($name, $this->sweep_methods))
-	{ // it is a sweep method
+        { // it is a withdrawal method, let's do the client side signing bit
+            $response = $this->_internal_withdraw($name, $args);
+        }
+        elseif (in_array($name, $this->sweep_methods))
+        { // it is a sweep method
 	     	$response = $this->_internal_sweep($name, $args);
-	}
-	else
-	{ // it is not a withdrawal method, let it go to Block.io
-
-		$response = $this->_request($name, $args);
-	}
-
-	return $response;
-
+        }
+        else
+        { // it is not a withdrawal method, let it go to Block.io
+            
+            $response = $this->_request($name, $args);
+        }
+        
+        return $response;
+        
     }
-
+    
     /**
      * cURL GET request driver
      */
@@ -72,16 +72,16 @@ class BlockIo
     {
         // Generate cURL URL
         $url =  str_replace("API_CALL",$path,"https://block.io/api/v" . $this->version . "/API_CALL/?api_key=") . $this->api_key;
-	$addedData = "";
-
-	foreach ($args as $pkey => $pval)
-	{
-
-		if (strlen($addedData) > 0) { $addedData .= '&'; }
-
-		$addedData .= $pkey . "=" . $pval;
-	}
-
+        $addedData = "";
+        
+        foreach ($args as $pkey => $pval)
+        {
+            
+            if (strlen($addedData) > 0) { $addedData .= '&'; }
+            
+            $addedData .= $pkey . "=" . $pval;
+        }
+        
         // Initiate cURL and set headers/options
         $ch  = curl_init();
         
@@ -93,223 +93,223 @@ class BlockIo
         	}        	
         	curl_setopt($ch, CURLOPT_CAINFO, $pemfile);
         }
-
-	// it's a GET method
-	if ($method == 'GET') { $url .= '&' . $addedData; }
-
-	curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enforce use of TLSv1.2
+        
+        // it's a GET method
+        if ($method == 'GET') { $url .= '&' . $addedData; }
+        
+        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enforce use of TLSv1.2
         curl_setopt($ch, CURLOPT_URL, $url);
-
-	if ($method == 'POST')
-	{ // this was a POST method
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $addedData);
-	}
-
-	$headers = array(
-    		 'Accept: application/json',
-		 'User-Agent: php:block_io:1.3.x'
-		 );
-
-	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
+        
+        if ($method == 'POST')
+        { // this was a POST method
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $addedData);
+        }
+        
+        $headers = array(
+            'Accept: application/json',
+            'User-Agent: php:block_io:2.0.x'
+        );
+        
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
         // Execute the cURL request
         $result = curl_exec($ch);
         curl_close($ch);
-
-	$json_result = json_decode($result);
-
-	if ($json_result->status != 'success') { throw new Exception('Failed: ' . $json_result->data->error_message); }
-
+        
+        $json_result = json_decode($result);
+        
+        if ($json_result->status != 'success') { throw new Exception('Failed: ' . $json_result->data->error_message); }
+        
         // Spit back the response object or fail
         return $result ? $json_result : false;        
     }
-
-
+    
+    
     private function _internal_withdraw($name, $args = array())
     { // withdraw method to be called by __call
-
-         unset ($args['pin']); // make sure no inadvertent passing of pin occurs
-
-	 $response = $this->_request($name,$args);
-
-	 if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
-	 { // we have signatures to append
-	 
-	   // get our encryption key ready
-	   if (strlen($this->encryption_key) == 0)
-	   {
-		$this->encryption_key = $this->pinToAesKey($this->pin);
-	   }
-
-	   // decrypt the data
-	   $passphrase = $this->decrypt($response->data->encrypted_passphrase->passphrase, $this->encryption_key);
-	   
-	   // extract the key
-	   $key = $this->initKey();
-	   $key->fromPassphrase($passphrase);
-
-	   // is this the right public key?
-	   if ($key->getPublicKey() != $response->data->encrypted_passphrase->signer_public_key) { throw new Exception('Fail: Invalid Secret PIN provided.'); }
-
-	   // grab inputs
-	   $inputs = &$response->data->inputs;
-
-	   // data to sign
-	   foreach ($inputs as &$curInput)
-	   { // for each input
-
-		$data_to_sign = &$curInput->data_to_sign;
-		
-		foreach ($curInput->signers as &$signer)
-		{ // for each signer
-
-		     if ($key->getPublicKey() == $signer->signer_public_key)
-		     {
-			$signer->signed_data = $key->signHash($data_to_sign);
-		     }		
-
-		}
-		
-	   }
-
-	   $json_string = json_encode($response->data);
-
-	   // let's send the signed data back to Block.io
-	   $response = $this->_request('sign_and_finalize_withdrawal', array('signature_data' => $json_string));
-	   
-	 }
-
-	 return $response;
+        
+        unset ($args['pin']); // make sure no inadvertent passing of pin occurs
+        
+        $response = $this->_request($name,$args);
+        
+        if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
+        { // we have signatures to append
+            
+            // get our encryption key ready
+            if (strlen($this->encryption_key) == 0)
+            {
+                $this->encryption_key = $this->pinToAesKey($this->pin);
+            }
+            
+            // decrypt the data
+            $passphrase = $this->decrypt($response->data->encrypted_passphrase->passphrase, $this->encryption_key);
+            
+            // extract the key
+            $key = $this->initKey();
+            $key->fromPassphrase($passphrase);
+            
+            // is this the right public key?
+            if ($key->getPublicKey() != $response->data->encrypted_passphrase->signer_public_key) { throw new Exception('Fail: Invalid Secret PIN provided.'); }
+            
+            // grab inputs
+            $inputs = &$response->data->inputs;
+            
+            // data to sign
+            foreach ($inputs as &$curInput)
+            { // for each input
+                
+                $data_to_sign = &$curInput->data_to_sign;
+                
+                foreach ($curInput->signers as &$signer)
+                { // for each signer
+                    
+                    if ($key->getPublicKey() == $signer->signer_public_key)
+                    {
+                        $signer->signed_data = $key->signHash($data_to_sign);
+                    }		
+                    
+                }
+                
+            }
+            
+            $json_string = json_encode($response->data);
+            
+            // let's send the signed data back to Block.io
+            $response = $this->_request('sign_and_finalize_withdrawal', array('signature_data' => $json_string));
+            
+        }
+        
+        return $response;
     }
-
+    
     private function _internal_sweep($name, $args = array())
     { // sweep method to be called by __call
-
-      	 $key = $this->initKey()->fromWif($args['private_key']);
-
-	 unset($args['private_key']); // remove the key so we don't send it to anyone outside
-
-	 $args['public_key'] = $key->getPublicKey();
-	 
-	 $response = $this->_request($name,$args);
-
-	 if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
-	 { // we have signatures to append
-
-	   // grab inputs
-	   $inputs = &$response->data->inputs;
-
-	   // data to sign
-	   foreach ($inputs as &$curInput)
-	   { // for each input
-
-		$data_to_sign = &$curInput->data_to_sign;
-		
-		foreach ($curInput->signers as &$signer)
-		{ // for each signer
-
-		     if ($key->getPublicKey() == $signer->signer_public_key)
-		     {
-			$signer->signed_data = $key->signHash($data_to_sign);
-		     }		
-
-		}
-		
-	   }
-
-	   $json_string = json_encode($response->data);
-
-	   // let's send the signed data back to Block.io
-	   $response = $this->_request('sign_and_finalize_sweep', array('signature_data' => $json_string));
-	   
-	 }
-
-	 return $response;
+        
+        $key = $this->initKey()->fromWif($args['private_key']);
+        
+        unset($args['private_key']); // remove the key so we don't send it to anyone outside
+        
+        $args['public_key'] = $key->getPublicKey();
+        
+        $response = $this->_request($name,$args);
+        
+        if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
+        { // we have signatures to append
+            
+            // grab inputs
+            $inputs = &$response->data->inputs;
+            
+            // data to sign
+            foreach ($inputs as &$curInput)
+            { // for each input
+                
+                $data_to_sign = &$curInput->data_to_sign;
+                
+                foreach ($curInput->signers as &$signer)
+                { // for each signer
+                    
+                    if ($key->getPublicKey() == $signer->signer_public_key)
+                    {
+                        $signer->signed_data = $key->signHash($data_to_sign);
+                    }		
+                    
+                }
+                
+            }
+            
+            $json_string = json_encode($response->data);
+            
+            // let's send the signed data back to Block.io
+            $response = $this->_request('sign_and_finalize_sweep', array('signature_data' => $json_string));
+            
+        }
+        
+        return $response;
     }
-
+    
     public function initKey()
     { // grants a new Key object
-	return new BlockKey();
+        return new BlockKey();
     }
-
+    
     private function pbkdf2($password, $key_length, $salt = "", $rounds = 1024, $a = 'sha256') 
     { // PBKDF2 function adaptation for Block.io
-
-      // Derived key 
-      $dk = '';
- 
-      // Create key 
-      for ($block=1; $block<=$key_length; $block++) 
-      { 
-      	// Initial hash for this block 
-    	$ib = $h = hash_hmac($a, $salt . pack('N', $block), $password, true); 
- 
-	// Perform block iterations 
-    	for ($i=1; $i<$rounds; $i++) 
-    	{ 
-      	  // XOR each iteration
-      	  $ib ^= ($h = hash_hmac($a, $h, $password, true)); 
-    	} 
- 
-	// Append iterated block 
-    	$dk .= $ib;
-      } 
- 
-      // Return derived key of correct length 
-      $key = substr($dk, 0, $key_length);
-      return bin2hex($key);
+        
+        // Derived key 
+        $dk = '';
+        
+        // Create key 
+        for ($block=1; $block<=$key_length; $block++) 
+        { 
+            // Initial hash for this block 
+            $ib = $h = hash_hmac($a, $salt . pack('N', $block), $password, true); 
+            
+            // Perform block iterations 
+            for ($i=1; $i<$rounds; $i++) 
+            { 
+                // XOR each iteration
+                $ib ^= ($h = hash_hmac($a, $h, $password, true)); 
+            } 
+            
+            // Append iterated block 
+            $dk .= $ib;
+        } 
+        
+        // Return derived key of correct length 
+        $key = substr($dk, 0, $key_length);
+        return bin2hex($key);
     }
-
-
+    
+    
     public function encrypt($data, $key)
     { 
-      # encrypt using aes256ecb
-      # data is string, key is hex string (pbkdf2 with 2,048 iterations)
-
-      $key = hex2bin($key); // convert the hex into binary
-
-      if (strlen($data) % 8 != 0) {
-      	 throw new Exception("Invalid data length: " . strlen($data));
-      }
-      
-      $ciphertext = openssl_encrypt($data, 'AES-256-ECB', $key, true);
-
-      $ciphertext_base64 = base64_encode($ciphertext);
-
-      return $ciphertext_base64;
+        # encrypt using aes256ecb
+        # data is string, key is hex string (pbkdf2 with 2,048 iterations)
+        
+        $key = hex2bin($key); // convert the hex into binary
+        
+        if (strlen($data) % 8 != 0) {
+            throw new Exception("Invalid data length: " . strlen($data));
+        }
+        
+        $ciphertext = openssl_encrypt($data, 'AES-256-ECB', $key, true);
+        
+        $ciphertext_base64 = base64_encode($ciphertext);
+        
+        return $ciphertext_base64;
     }
-
+    
     
     public function pinToAesKey($pin)
     { // converts the given Secret PIN to an Encryption Key
-
-    $enc_key_16 = $this->pbkdf2($pin,16);
-    $enc_key_32 = $this->pbkdf2($enc_key_16,32);
-
-    return $enc_key_32;
+        
+        $enc_key_16 = $this->pbkdf2($pin,16);
+        $enc_key_32 = $this->pbkdf2($enc_key_16,32);
+        
+        return $enc_key_32;
     }   
-
+    
     public function decrypt($b64ciphertext, $key)
     {
         # data must be in base64 string, $key is binary of hashed pincode
-    
+        
         $key = hex2bin($key); // convert the hex into binary
-
-	$ciphertext_dec = base64_decode($b64ciphertext);
-    
-	$data_dec = openssl_decrypt($ciphertext_dec, 'AES-256-ECB', $key, OPENSSL_RAW_DATA, NULL);
-
-	return $data_dec; // plain text
-    
+        
+        $ciphertext_dec = base64_decode($b64ciphertext);
+        
+        $data_dec = openssl_decrypt($ciphertext_dec, 'AES-256-ECB', $key, OPENSSL_RAW_DATA, NULL);
+        
+        return $data_dec; // plain text
+        
     }
-
+    
 }
 
 class BlockKey
 {
-
+    
     public $k;
     public $a;
     public $b;
@@ -318,63 +318,63 @@ class BlockKey
     public $G;
     public $networkPrefix;
     public $c = true; //compressed or not
-
+    
     public function __construct()
     {
         $this->a = gmp_init('0', 10);
         $this->b = gmp_init('7', 10);
         $this->p = gmp_init('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F', 16);
         $this->n = gmp_init('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141', 16);
-
+        
         $this->G = array('x' => gmp_init('55066263022277343669578718895168534326250603453777594175500187360389116729240'),
                          'y' => gmp_init('32670510020758816978083085130507043184471273380659243275938904335757337482424'));
-
+        
         $this->networkPrefix = '00';
     }
     
     public function deterministicGenerateK($message, $key, $extra_entropy)
     { // key in hex, message as it is
-    // RFC6979
-    
-	$hash = $message;
-
-	$k = "0000000000000000000000000000000000000000000000000000000000000000";
-	$v = "0101010101010101010101010101010101010101010101010101010101010101";
-
-	$e = "";
-
-	if (!is_null($extra_entropy)) { $e = $extra_entropy; }
-	
-	// step D
-	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
-
-	// step E
-	$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
-
-	// step F
-	$k = hash_hmac('sha256', hex2bin($v) . hex2bin("01") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
-
-	// step G
-	$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
-
-	// H2b
-	$h2b = hash_hmac('sha256', hex2bin($v), hex2bin($k));
-
-	$tNum = gmp_init($h2b,16);
-
-	// step H3
-	while (gmp_sign($tNum) <= 0 || gmp_cmp($tNum, $this->n) >= 0)
-	{
-		$k = hash_hmac('sha256', hex2bin($v) . hex2bin("00"), hex2bin($k));
-		$v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
-
-		$tNum = gmp_init($v, 16);
-	}
-
-	return gmp_strval($tNum,16);
+        // RFC6979
+        
+        $hash = $message;
+        
+        $k = "0000000000000000000000000000000000000000000000000000000000000000";
+        $v = "0101010101010101010101010101010101010101010101010101010101010101";
+        
+        $e = "";
+        
+        if (!is_null($extra_entropy)) { $e = $extra_entropy; }
+        
+        // step D
+        $k = hash_hmac('sha256', hex2bin($v) . hex2bin("00") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
+        
+        // step E
+        $v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+        
+        // step F
+        $k = hash_hmac('sha256', hex2bin($v) . hex2bin("01") . hex2bin($key) . hex2bin($hash) . hex2bin($e), hex2bin($k));
+        
+        // step G
+        $v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+        
+        // H2b
+        $h2b = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+        
+        $tNum = gmp_init($h2b,16);
+        
+        // step H3
+        while (gmp_sign($tNum) <= 0 || gmp_cmp($tNum, $this->n) >= 0)
+        {
+            $k = hash_hmac('sha256', hex2bin($v) . hex2bin("00"), hex2bin($k));
+            $v = hash_hmac('sha256', hex2bin($v), hex2bin($k));
+            
+            $tNum = gmp_init($v, 16);
+        }
+        
+        return gmp_strval($tNum,16);
     }   
-
-
+    
+    
     /***
      * Convert a number to a compact Int
      * taken from https://github.com/scintill/php-bitcoin-signature-routines/blob/master/verifymessage.php
@@ -394,7 +394,7 @@ class BlockKey
             throw new \Exception('int too large');
         }
     }
-
+    
     /***
      * Set the network prefix, '00' = main network, '6f' = test network.
      *
@@ -404,7 +404,7 @@ class BlockKey
     {
         $this->networkPrefix = $prefix;
     }
-
+    
     /**
      * Returns the current network prefix, '00' = main network, '6f' = test network.
      *
@@ -414,7 +414,7 @@ class BlockKey
     {
         return $this->networkPrefix;
     }
-
+    
     /***
      * Permutation table used for Base58 encoding and decoding.
      *
@@ -428,8 +428,8 @@ class BlockKey
                        'E','F','G','H','J','K','L','M','N','P','Q','R','S','T','U','V','W',
                        'X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','m','n','o',
                        'p','q','r','s','t','u','v','w','x','y','z'
-                 );
-
+        );
+        
         if($reverse)
         {
             $reversedTable = array();
@@ -437,19 +437,19 @@ class BlockKey
             {
                 $reversedTable[$element] = $key;
             }
-
+            
             if(isset($reversedTable[$char]))
                 return $reversedTable[$char];
             else
                 return null;
         }
-
+        
         if(isset($table[$char]))
             return $table[$char];
         else
             return null;
     }
-
+    
     /***
      * Bitcoin standard 256 bit hash function : double sha256
      *
@@ -460,7 +460,7 @@ class BlockKey
     {
         return hash('sha256', hex2bin(hash('sha256', $data)));
     }
-
+    
     /***
      * encode a hexadecimal string in Base58.
      *
@@ -484,7 +484,7 @@ class BlockKey
             }
             $res .= $this->base58_permutation($reminder);
         }
-
+        
         //get number of leading zeros
         $leading = '';
         $i=0;
@@ -496,13 +496,13 @@ class BlockKey
             }
             $i++;
         }
-
+        
         if($littleEndian)
             return strrev($res . $leading);
         else
             return $res.$leading;
     }
-
+    
     /***
      * Decode a Base58 encoded string and returns it's value as a hexadecimal string
      *
@@ -518,18 +518,18 @@ class BlockKey
         {
             $encodedData = strrev($encodedData);
         }
-
+        
         for($i = $length - 1; $i >= 0; $i--)
         {
             $res = gmp_add(
-                           gmp_mul(
-                                   $res,
-                                   gmp_init(58, 10)
-                           ),
-                           $this->base58_permutation(substr($encodedData, $i, 1), true)
-                   );
+                gmp_mul(
+                    $res,
+                    gmp_init(58, 10)
+                ),
+                $this->base58_permutation(substr($encodedData, $i, 1), true)
+            );
         }
-
+        
         $res = gmp_strval($res, 16);
         $i = $length - 1;
         while(substr($encodedData, $i, 1) == '1')
@@ -537,20 +537,20 @@ class BlockKey
             $res = '00' . $res;
             $i--;
         }
-
+        
         if(strlen($res)%2 != 0)
         {
             $res = '0' . $res;
         }
-
+        
         return $res;
     }
-
+    
     public function toWif($network = "BTC")
     {
-	return $this->getWif($network);
+        return $this->getWif($network);
     }
-
+    
     /***
      * returns the private key under the Wallet Import Format
      *
@@ -563,25 +563,25 @@ class BlockKey
         {
             throw new \Exception('No Private Key was defined');
         }
-
-	$privKeyVersions = array();
-	$privKeyVersion["BTC"] = '80';
-	$privKeyVersion["BTCTEST"] = 'ef';
-	$privKeyVersion["DOGE"] = '9e';
-	$privKeyVersion["DOGETEST"] = 'f1';
-	$privKeyVersion["LTC"] = 'b0';
-	$privKeyVersion["LTCTEST"] = 'ef';
-
+        
+        $privKeyVersions = array();
+        $privKeyVersion["BTC"] = '80';
+        $privKeyVersion["BTCTEST"] = 'ef';
+        $privKeyVersion["DOGE"] = '9e';
+        $privKeyVersion["DOGETEST"] = 'f1';
+        $privKeyVersion["LTC"] = 'b0';
+        $privKeyVersion["LTCTEST"] = 'ef';
+        
         $k              = $this->k;
         $secretKey      = $privKeyVersion[$network] . $k;
-	if ($this->c) { $secretKey .= '01'; } // set the compression flag if we need it
+        if ($this->c) { $secretKey .= '01'; } // set the compression flag if we need it
         $firstSha256    = hash('sha256', hex2bin($secretKey));
         $secondSha256   = hash('sha256', hex2bin($firstSha256));
         $secretKey     .= substr($secondSha256, 0, 8);
-
+        
         return $this->base58_encode($secretKey);
     }
-
+    
     /***
      * Computes the result of a point addition and returns the resulting point as an Array.
      *
@@ -593,70 +593,70 @@ class BlockKey
     {
         $a = $this->a;
         $p = $this->p;
-
+        
         $gcd = gmp_strval(gmp_gcd(gmp_mod(gmp_mul(gmp_init(2, 10), $pt['y']), $p),$p));
         if($gcd != '1')
         {
             throw new \Exception('This library doesn\'t yet supports point at infinity. See https://github.com/BitcoinPHP/BitcoinECDSA.php/issues/9');
         }
-
+        
         // SLOPE = (3 * ptX^2 + a )/( 2*ptY )
         // Equals (3 * ptX^2 + a ) * ( 2*ptY )^-1
         $slope = gmp_mod(
-                         gmp_mul(
-                                 gmp_invert(
-                                            gmp_mod(
-                                                    gmp_mul(
-                                                            gmp_init(2, 10),
-                                                            $pt['y']
-                                                    ),
-                                                    $p
-                                            ),
-                                            $p
-                                 ),
-                                 gmp_add(
-                                         gmp_mul(
-                                                 gmp_init(3, 10),
-                                                 gmp_pow($pt['x'], 2)
-                                         ),
-                                         $a
-                                 )
-                         ),
-                         $p
-                );
-
+            gmp_mul(
+                gmp_invert(
+                    gmp_mod(
+                        gmp_mul(
+                            gmp_init(2, 10),
+                            $pt['y']
+                        ),
+                        $p
+                    ),
+                    $p
+                ),
+                gmp_add(
+                    gmp_mul(
+                        gmp_init(3, 10),
+                        gmp_pow($pt['x'], 2)
+                    ),
+                    $a
+                )
+            ),
+            $p
+        );
+        
         // nPtX = slope^2 - 2 * ptX
         // Equals slope^2 - ptX - ptX
         $nPt = array();
         $nPt['x'] = gmp_mod(
-                            gmp_sub(
-                                    gmp_sub(
-                                            gmp_pow($slope, 2),
-                                            $pt['x']
-                                    ),
-                                    $pt['x']
-                            ),
-                            $p
-                    );
-
+            gmp_sub(
+                gmp_sub(
+                    gmp_pow($slope, 2),
+                    $pt['x']
+                ),
+                $pt['x']
+            ),
+            $p
+        );
+        
         // nPtY = slope * (ptX - nPtx) - ptY
         $nPt['y'] = gmp_mod(
-                            gmp_sub(
-                                    gmp_mul(
-                                            $slope,
-                                            gmp_sub(
-                                                    $pt['x'],
-                                                    $nPt['x']
-                                            )
-                                    ),
-                                    $pt['y']
-                            ),
-                            $p
-                    );
-
+            gmp_sub(
+                gmp_mul(
+                    $slope,
+                    gmp_sub(
+                        $pt['x'],
+                        $nPt['x']
+                    )
+                ),
+                $pt['y']
+            ),
+            $p
+        );
+        
         return $nPt;
     }
-
+    
     /***
      * Computes the result of a point addition and returns the resulting point as an Array.
      *
@@ -672,63 +672,63 @@ class BlockKey
         {
             return $this->doublePoint($pt1);
         }
-
+        
         $gcd = gmp_strval(gmp_gcd(gmp_sub($pt1['x'], $pt2['x']), $p));
         if($gcd != '1')
         {
             throw new \Exception('This library doesn\'t yet supports point at infinity. See https://github.com/BitcoinPHP/BitcoinECDSA.php/issues/9');
         }
-
+        
         // SLOPE = (pt1Y - pt2Y)/( pt1X - pt2X )
         // Equals (pt1Y - pt2Y) * ( pt1X - pt2X )^-1
         $slope      = gmp_mod(
-                              gmp_mul(
-                                      gmp_sub(
-                                              $pt1['y'],
-                                              $pt2['y']
-                                      ),
-                                      gmp_invert(
-                                                 gmp_sub(
-                                                         $pt1['x'],
-                                                         $pt2['x']
-                                                 ),
-                                                 $p
-                                      )
-                              ),
-                              $p
-                      );
-
+            gmp_mul(
+                gmp_sub(
+                    $pt1['y'],
+                    $pt2['y']
+                ),
+                gmp_invert(
+                    gmp_sub(
+                        $pt1['x'],
+                        $pt2['x']
+                    ),
+                    $p
+                )
+            ),
+            $p
+        );
+        
         // nPtX = slope^2 - ptX1 - ptX2
         $nPt = array();
         $nPt['x']   = gmp_mod(
-                              gmp_sub(
-                                      gmp_sub(
-                                              gmp_pow($slope, 2),
-                                              $pt1['x']
-                                      ),
-                                      $pt2['x']
-                              ),
-                              $p
-                      );
-
+            gmp_sub(
+                gmp_sub(
+                    gmp_pow($slope, 2),
+                    $pt1['x']
+                ),
+                $pt2['x']
+            ),
+            $p
+        );
+        
         // nPtX = slope * (ptX1 - nPtX) - ptY1
         $nPt['y']   = gmp_mod(
-                              gmp_sub(
-                                      gmp_mul(
-                                              $slope,
-                                              gmp_sub(
-                                                      $pt1['x'],
-                                                      $nPt['x']
-                                              )
-                                      ),
-                                      $pt1['y']
-                              ),
-                              $p
-                      );
-
+            gmp_sub(
+                gmp_mul(
+                    $slope,
+                    gmp_sub(
+                        $pt1['x'],
+                        $nPt['x']
+                    )
+                ),
+                $pt1['y']
+            ),
+            $p
+        );
+        
         return $nPt;
     }
-
+    
     /***
      * Computes the result of a point multiplication and returns the resulting point as an Array.
      *
@@ -746,7 +746,7 @@ class BlockKey
         if($base == 10)
             $k = gmp_init($k, 10);
         $kBin = gmp_strval($k, 2);
-
+        
         $lastPoint = $pG;
         for($i = 1; $i < strlen($kBin); $i++)
         {
@@ -764,7 +764,7 @@ class BlockKey
             throw new \Exception('The resulting point is not on the curve.');
         return $lastPoint;
     }
-
+    
     /***
      * Calculates the square root of $a mod p and returns the 2 solutions as an array.
      *
@@ -775,23 +775,23 @@ class BlockKey
     public function sqrt($a)
     {
         $p = $this->p;
-
+        
         if(gmp_legendre($a, $p) != 1)
         {
             //no result
             return null;
         }
-
+        
         if(gmp_strval(gmp_mod($p, gmp_init(4, 10)), 10) == 3)
         {
             $sqrt1 = gmp_powm(
-                            $a,
-                            gmp_div_q(
-                                gmp_add($p, gmp_init(1, 10)),
-                                gmp_init(4, 10)
-                            ),
-                            $p
-                    );
+                $a,
+                gmp_div_q(
+                    gmp_add($p, gmp_init(1, 10)),
+                    gmp_init(4, 10)
+                ),
+                $p
+            );
             // there are always 2 results for a square root
             // In an infinite number field you have -2^2 = 2^2 = 4
             // In a finite number field you have a^2 = (p-a)^2
@@ -803,7 +803,7 @@ class BlockKey
             throw new \Exception('P % 4 != 3 , this isn\'t supported yet.');
         }
     }
-
+    
     /***
      * Calculate the Y coordinates for a given X coordinate.
      *
@@ -816,31 +816,31 @@ class BlockKey
         $a  = $this->a;
         $b  = $this->b;
         $p  = $this->p;
-
+        
         $x  = gmp_init($x, 16);
         $y2 = gmp_mod(
-                      gmp_add(
-                              gmp_add(
-                                      gmp_powm($x, gmp_init(3, 10), $p),
-                                      gmp_mul($a, $x)
-                              ),
-                              $b
-                      ),
-                      $p
-              );
-
+            gmp_add(
+                gmp_add(
+                    gmp_powm($x, gmp_init(3, 10), $p),
+                    gmp_mul($a, $x)
+                ),
+                $b
+            ),
+            $p
+        );
+        
         $y = $this->sqrt($y2);
-
+        
         if(!$y) //if there is no result
         {
             return null;
         }
-
+        
         if(!$derEvenOrOddCode)
         {
             return $y;
         }
-
+        
         else if($derEvenOrOddCode == '02') // even
         {
             $resY = null;
@@ -873,10 +873,10 @@ class BlockKey
             }
             return $resY;
         }
-
+        
         return null;
     }
-
+    
     /***
      * returns the public key coordinates as an array.
      *
@@ -905,8 +905,8 @@ class BlockKey
             throw new \Exception('Invalid derPubKey format : ' . $derPubKey);
         }
     }
-
-
+    
+    
     public function getDerPubKeyWithPubKeyPoints($pubKey, $compressed = true)
     {
         if(true == $compressed)
@@ -919,11 +919,11 @@ class BlockKey
                 $pubKey  	= '02' . $pubKey['x'];	//if $pubKey['y'] is even
             else
                 $pubKey  	= '03' . $pubKey['x'];	//if $pubKey['y'] is odd
-
+            
             return $pubKey;
         }
     }
-
+    
     /***
      * Returns true if the point is on the curve and false if it isn't.
      *
@@ -936,26 +936,26 @@ class BlockKey
         $a  = $this->a;
         $b  = $this->b;
         $p  = $this->p;
-
+        
         $x  = gmp_init($x, 16);
         $y2 = gmp_mod(
-                        gmp_add(
-                            gmp_add(
-                                gmp_powm($x, gmp_init(3, 10), $p),
-                                gmp_mul($a, $x)
-                            ),
-                            $b
-                        ),
-                        $p
-                    );
+            gmp_add(
+                gmp_add(
+                    gmp_powm($x, gmp_init(3, 10), $p),
+                    gmp_mul($a, $x)
+                ),
+                $b
+            ),
+            $p
+        );
         $y = gmp_mod(gmp_pow(gmp_init($y, 16), 2), $p);
-
+        
         if(gmp_cmp($y2, $y) == 0)
             return true;
         else
             return false;
     }
-
+    
     /***
      * returns the X and Y point coordinates of the public key.
      *
@@ -966,32 +966,32 @@ class BlockKey
     {
         $G = $this->G;
         $k = $this->k;
-
+        
         if(!isset($this->k))
         {
             throw new \Exception('No Private Key was defined');
         }
-
+        
         $pubKey 	    = $this->mulPoint($k,
                                           array('x' => $G['x'], 'y' => $G['y'])
-                                 );
-
+        );
+        
         $pubKey['x']	= gmp_strval($pubKey['x'], 16);
         $pubKey['y']	= gmp_strval($pubKey['y'], 16);
-
+        
         while(strlen($pubKey['x']) < 64)
         {
             $pubKey['x'] = '0' . $pubKey['x'];
         }
-
+        
         while(strlen($pubKey['y']) < 64)
         {
             $pubKey['y'] = '0' . $pubKey['y'];
         }
-
+        
         return $pubKey;
     }
-
+    
     /***
      * returns the uncompressed DER encoded public key.
      *
@@ -1001,15 +1001,15 @@ class BlockKey
     {
         $pubKey			    = $this->getPubKeyPoints();
         $uncompressedPubKey	= '04' . $pubKey['x'] . $pubKey['y'];
-
+        
         return $uncompressedPubKey;
     }
-
+    
     public function getPublicKey()
     {
-	return $this->getPubKey();
+        return $this->getPubKey();
     }
-
+    
     /***
      * returns the compressed DER encoded public key.
      *
@@ -1017,25 +1017,25 @@ class BlockKey
      */
     public function getPubKey()
     {
-	$pubKey = "";
-
-	if ($this->c)
-	{ // compressed
-		$pubKey = $this->getPubKeyPoints();
-
+        $pubKey = "";
+        
+        if ($this->c)
+        { // compressed
+            $pubKey = $this->getPubKeyPoints();
+            
         	if(gmp_strval(gmp_mod(gmp_init($pubKey['y'], 16), gmp_init(2, 10))) == 0)
-            	        $pubKey  	= '02' . $pubKey['x'];	//if $pubKey['y'] is even
+                $pubKey  	= '02' . $pubKey['x'];	//if $pubKey['y'] is even
         	else
-			$pubKey  	= '03' . $pubKey['x'];	//if $pubKey['y'] is odd
-	}
-	else
-	{ // uncompressed
-		$pubKey = $this->getUncompressedPubKey();
-	}
-
+                $pubKey  	= '03' . $pubKey['x'];	//if $pubKey['y'] is odd
+        }
+        else
+        { // uncompressed
+            $pubKey = $this->getUncompressedPubKey();
+        }
+        
         return $pubKey;
     }
-
+    
     /***
      * returns the uncompressed Bitcoin address generated from the private key if $compressed is false and
      * the compressed if $compressed is true.
@@ -1060,23 +1060,23 @@ class BlockKey
                 $address 	= $this->getUncompressedPubKey();
             }
         }
-
+        
         $sha256		    = hash('sha256', hex2bin($address));
         $ripem160 	    = hash('ripemd160', hex2bin($sha256));
         $address 	    = $this->getNetworkPrefix() . $ripem160;
-
+        
         //checksum
         $sha256		    = hash('sha256', hex2bin($address));
         $sha256		    = hash('sha256', hex2bin($sha256));
         $address 	    = $address.substr($sha256, 0, 8);
         $address        = $this->base58_encode($address);
-
+        
         if($this->validateAddress($address))
             return $address;
         else
             throw new \Exception('the generated address seems not to be valid.');
     }
-
+    
     /***
      * returns the compressed Bitcoin address generated from the private key.
      *
@@ -1087,7 +1087,7 @@ class BlockKey
     {
         return $this->getUncompressedAddress(true, $derPubKey);
     }
-
+    
     /***
      * set a private key.
      *
@@ -1103,42 +1103,42 @@ class BlockKey
         }
         $this->k = $k;
     }
-
+    
     public function fromPassphrase($pp)
     {  // take a sha256 hash of the passphrase, and then set it as the private key
-    
-	$hashed = hash('sha256', hex2bin($pp));
-	
-	$this->setPrivateKey($hashed);
-
-	return $this;
+        
+        $hashed = hash('sha256', hex2bin($pp));
+        
+        $this->setPrivateKey($hashed);
+        
+        return $this;
     }
-
+    
     public function fromWif($pp)
     { // extract the private key from the key in Wallet Import Format
-
-      	 // TODO validation
-
+        
+        // TODO validation
+        
 	 if ($this->validateWifKey($pp) === false) { throw new \Exception("Invalid Private Key provided."); }
-
+     
 	 $fullStr = $this->base58_decode($pp);
 	 $withoutVersion = substr($fullStr,2);
 	 $withoutChecksumAndVersion = substr($withoutVersion,0,64);
-
+     
 	 $this->setPrivateKey($withoutChecksumAndVersion);
-
+     
 	 if (substr($withoutVersion,64,2) == '01') 
 	 { // is compressed
-		$this->c = true;
+         $this->c = true;
 	 }
 	 else 
 	 { // is not compressed
-		$this->c = false;     
+         $this->c = false;     
 	 }
-
+     
 	 return $this;
     }
-
+    
     /***
      * return the private key.
      *
@@ -1148,8 +1148,8 @@ class BlockKey
     {
         return $this->k;
     }
-
-
+    
+    
     /***
      * Generate a new random private key.
      * The extra parameter can be some random data typed down by the user or mouse movements to add randomness.
@@ -1165,15 +1165,15 @@ class BlockKey
             $hex        = bin2hex($bytes);
             $random     = $hex . microtime(true).rand(100000000000, 1000000000000) . $extra;
             $this->k    = hash('sha256', $random);
-
+            
             if(!$cStrong)
             {
                 throw new \Exception('Your system is not able to generate strong enough random numbers');
             }
-
+            
         } while(gmp_cmp(gmp_init($this->k, 16), gmp_sub($this->n, gmp_init(1, 10))) == 1);
     }
-
+    
     /***
      * Tests if the address is valid or not.
      *
@@ -1189,13 +1189,13 @@ class BlockKey
         $rawAddress = substr($address, 0, 21);
         $sha256		= hash('sha256', $rawAddress);
         $sha256		= hash('sha256', hex2bin($sha256));
-
+        
         if(substr(hex2bin($sha256), 0, 4) == $checksum)
             return true;
         else
             return false;
     }
-
+    
     /***
      * Tests if the Wif key (Wallet Import Format) is valid or not.
      *
@@ -1213,16 +1213,16 @@ class BlockKey
         else
             return false;
     }
-
+    
     function String2Hex($string){
-    	     $hex='';
-    	     for ($i=0; $i < strlen($string); $i++){
-             	 $hex .= dechex(ord($string[$i]));
-	     }
-    	     return $hex;
+        $hex='';
+        for ($i=0; $i < strlen($string); $i++){
+            $hex .= dechex(ord($string[$i]));
+        }
+        return $hex;
     }
- 
-
+    
+    
     /***
      * Sign a hash with the private key that was set and returns signatures as an array (R,S)
      *
@@ -1235,84 +1235,84 @@ class BlockKey
     {
         $n = $this->n;
         $k = $this->k;
-	$counter = 0;
-	$extra_entropy = "";
-	$nonce_not_provided = is_null($nonce);
-
+        $counter = 0;
+        $extra_entropy = "";
+        $nonce_not_provided = is_null($nonce);
+        
         if(empty($k))
         {
             throw new \Exception('No Private Key was defined');
         }
-
-	do{
+        
+        do{
 	        if($nonce_not_provided)
         	{
-			// use a deterministic nonce
-
-			if ($counter > 0) {
-			   $extra_entropy = implode(array_reverse(str_split(sprintf("%064s", dechex($counter)),2)));
-			}
-			
-			$nonce = $this->deterministicGenerateK($hash, $this->k, $extra_entropy);
-			$counter = $counter + 1;
+                // use a deterministic nonce
+                
+                if ($counter > 0) {
+                    $extra_entropy = implode(array_reverse(str_split(sprintf("%064s", dechex($counter)),2)));
+                }
+                
+                $nonce = $this->deterministicGenerateK($hash, $this->k, $extra_entropy);
+                $counter = $counter + 1;
         	}
-
+            
         	//first part of the signature (R).
-
+            
         	$rPt = $this->mulPoint($nonce, $this->G);
         	$R	= gmp_strval($rPt ['x'], 16);
-
-		// fix DER encoding -- pad it so we don't confuse overflow with being negative
-		if (strlen($R)%2) { $R = '0' . $R; }
-		else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
-
-	}while($nonce_not_provided && (strlen(hex2bin($R)) != 32 || hexdec(substr($R, 0, 1)) >= 128));
-	
+            
+            // fix DER encoding -- pad it so we don't confuse overflow with being negative
+            if (strlen($R)%2) { $R = '0' . $R; }
+            else if (hexdec(substr($R, 0, 1)) >= 8) { $R = '00' . $R; }
+            
+        }while($nonce_not_provided && (strlen(hex2bin($R)) != 32 || hexdec(substr($R, 0, 1)) >= 128));
+        
         //second part of the signature (S).
         //S = nonce^-1 (hash + privKey * R) mod p
-
+        
         $S = gmp_strval(
-                        gmp_mod(
-                                gmp_mul(
-                                        gmp_invert(
-                                                   gmp_init($nonce, 16),
-                                                   $n
-                                        ),
-                                        gmp_add(
-                                                gmp_init($hash, 16),
-                                                gmp_mul(
-                                                        gmp_init($k, 16),
-                                                        gmp_init($R, 16)
-                                                )
-                                        )
-                                ),
-                                $n
-                        ),
-                        16
-             );
-
-	// implement BIP62
-
-	$gmpS = gmp_init($S,16);	
-	$N_OVER_TWO = gmp_div($this->n,2);
-
-	if (gmp_cmp($gmpS,$N_OVER_TWO) > 0)
-	{
-		$S = gmp_strval(gmp_sub($this->n, $gmpS),16);
-	}
-
-	// fix DER encoding -- pad it so we don't confuse overflow with being negative
-	if (strlen($S)%2) { $S = '0' . $S; }
-	else if (hexdec(substr($S, 0, 1)) >= 8) { $S = '00' . $S; }
-
+            gmp_mod(
+                gmp_mul(
+                    gmp_invert(
+                        gmp_init($nonce, 16),
+                        $n
+                    ),
+                    gmp_add(
+                        gmp_init($hash, 16),
+                        gmp_mul(
+                            gmp_init($k, 16),
+                            gmp_init($R, 16)
+                        )
+                    )
+                ),
+                $n
+            ),
+            16
+        );
+        
+        // implement BIP62
+        
+        $gmpS = gmp_init($S,16);	
+        $N_OVER_TWO = gmp_div($this->n,2);
+        
+        if (gmp_cmp($gmpS,$N_OVER_TWO) > 0)
+        {
+            $S = gmp_strval(gmp_sub($this->n, $gmpS),16);
+        }
+        
+        // fix DER encoding -- pad it so we don't confuse overflow with being negative
+        if (strlen($S)%2) { $S = '0' . $S; }
+        else if (hexdec(substr($S, 0, 1)) >= 8) { $S = '00' . $S; }
+        
         return array('R' => $R, 'S' => $S);
     }
-
+    
     public function sign($hash, $nonce = null)
     {
-	return $this->signHash($hash, $nonce);
+        return $this->signHash($hash, $nonce);
     }
-
+    
     /***
      * Sign a hash with the private key that was set and returns a DER encoded signature
      *
@@ -1322,15 +1322,15 @@ class BlockKey
      */
     public function signHash($hash, $nonce = null)
     {
-    
+        
         $points = $this->getSignatureHashPoints($hash, $nonce);
-
+        
         $signature = '02' . dechex(strlen(hex2bin($points['R']))) . $points['R'] . '02' . dechex(strlen(hex2bin($points['S']))) . $points['S'];
         $signature = '30' . dechex(strlen(hex2bin($signature))) . $signature;
-
+        
         return $signature;
     }
-
+    
     /***
      * Satoshi client's standard message signature implementation.
      *
@@ -1345,10 +1345,10 @@ class BlockKey
 
         $hash = $this->hash256("\x18Bitcoin Signed Message:\n" . $this->numToVarIntString(strlen($message)). $message);
         $points = $this->getSignatureHashPoints(
-                                                $hash,
-                                                $nonce
-                   );
-
+            $hash,
+            $nonce
+        );
+        
         $R = $points['R'];
         $S = $points['S'];
 
@@ -1413,33 +1413,33 @@ class BlockKey
      */
     public function getPubKeyWithRS($flag, $R, $S, $hash)
     {
-
+        
         $isCompressed = false;
-
+        
         if ($flag < 27 || $flag >= 35)
             return false;
-
+        
         if($flag >= 31) //if address is compressed
         {
             $isCompressed = true;
             $flag -= 4;
         }
-
+        
         $recid = $flag - 27;
-
+        
         //step 1.1
         $x = null;
         $x = gmp_add(
-                     gmp_init($R, 16),
-                     gmp_mul(
-                             $this->n,
-                             gmp_div_q( //check if j is equal to 0 or to 1.
-                                        gmp_init($recid, 10),
-                                        gmp_init(2, 10)
-                             )
-                     )
-             );
-
+            gmp_init($R, 16),
+            gmp_mul(
+                $this->n,
+                gmp_div_q( //check if j is equal to 0 or to 1.
+                    gmp_init($recid, 10),
+                    gmp_init(2, 10)
+                )
+            )
+        );
+        
         //step 1.3
         $y = null;
         if(1 == $flag % 2) //check if y is even.
@@ -1457,29 +1457,29 @@ class BlockKey
 
         if(null == $y)
             return null;
-
+        
         $Rpt = array('x' => $x, 'y' => $y);
-
+        
         //step 1.6.1
         //calculate r^-1 (S*Rpt - eG)
-
+        
         $eG = $this->mulPoint($hash, $this->G);
-
+        
         $eG['y'] = gmp_mod(gmp_neg($eG['y']), $this->p);
-
+        
         $SR = $this->mulPoint($S, $Rpt);
-
+        
         $pubKey = $this->mulPoint(
-                            gmp_strval(gmp_invert(gmp_init($R, 16), $this->n), 16),
-                            $this->addPoints(
-                                             $SR,
-                                             $eG
-                            )
-                  );
-
+            gmp_strval(gmp_invert(gmp_init($R, 16), $this->n), 16),
+            $this->addPoints(
+                $SR,
+                $eG
+            )
+        );
+        
         $pubKey['x'] = gmp_strval($pubKey['x'], 16);
         $pubKey['y'] = gmp_strval($pubKey['y'], 16);
-
+        
         while(strlen($pubKey['x']) < 64)
             $pubKey['x'] = '0' . $pubKey['x'];
 
@@ -1508,40 +1508,40 @@ class BlockKey
     public function checkSignaturePoints($pubKey, $R, $S, $hash)
     {
         $G = $this->G;
-
+        
         $pubKeyPts = $this->getPubKeyPointsWithDerPubKey($pubKey);
-
+        
         // S^-1* hash * G + S^-1 * R * Qa
-
+        
         // S^-1* hash
         $exp1 =  gmp_strval(
-                            gmp_mul(
-                                    gmp_invert(
-                                               gmp_init($S, 16),
-                                               $this->n
-                                    ),
-                                    gmp_init($hash, 16)
-                            ),
-                            16
-                 );
-
+            gmp_mul(
+                gmp_invert(
+                    gmp_init($S, 16),
+                    $this->n
+                ),
+                gmp_init($hash, 16)
+            ),
+            16
+        );
+        
         // S^-1* hash * G
         $exp1Pt = $this->mulPoint($exp1, $G);
-
-
+        
+        
         // S^-1 * R
         $exp2 =  gmp_strval(
-                            gmp_mul(
-                                    gmp_invert(
-                                               gmp_init($S, 16),
-                                                $this->n
-                                    ),
-                                    gmp_init($R, 16)
-                            ),
-                            16
-                 );
+            gmp_mul(
+                gmp_invert(
+                    gmp_init($S, 16),
+                    $this->n
+                ),
+                gmp_init($R, 16)
+            ),
+            16
+        );
         // S^-1 * R * Qa
-
+        
         $pubKeyPts['x'] = gmp_init($pubKeyPts['x'], 16);
         $pubKeyPts['y'] = gmp_init($pubKeyPts['y'], 16);
 
@@ -1573,16 +1573,16 @@ class BlockKey
         $signature = hex2bin($signature);
         if('30' != bin2hex(substr($signature, 0, 1)))
             return false;
-
+        
         $RLength = hexdec(bin2hex(substr($signature, 3, 1)));
         $R = bin2hex(substr($signature, 4, $RLength));
-
+        
         $SLength = hexdec(bin2hex(substr($signature, $RLength + 5, 1)));
         $S = bin2hex(substr($signature, $RLength + 6, $SLength));
-
+        
         return $this->checkSignaturePoints($pubKey, $R, $S, $hash);
     }
-
+    
     /***
      * checks the signature of a bitcoin signed message.
      *
