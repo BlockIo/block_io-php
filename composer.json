@@ -5,12 +5,19 @@
     "keywords": ["block.io", "dogecoin", "bitcoin", "litecoin", "block_io"],
     "homepage": "https://block.io",
     "type": "library",
-        "require": {
-        "php": ">=7.2.0",
+    "require": {
+        "php": ">=7.2",
+	"bitwasp/bitcoin": "dev-minimal",
         "ext-gmp": "*",
         "ext-curl": "*"
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/doersf/bitcoin-php.git"
+        }
+    ],
     "autoload": {
-    		"classmap": ["lib/"]
+    	"classmap": ["lib/"]
     }
 }
