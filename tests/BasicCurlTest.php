@@ -8,7 +8,7 @@ class BasicCurlTest extends TestCase
 
     protected function setUp(): void {
 	parent::setUp();
-	$this->blockio = new BlockIo("", "", 2);
+	$this->blockio = new \BlockIo\Client("", "", 2);
     }
 
     protected function tearDown(): void {

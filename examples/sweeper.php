@@ -7,13 +7,13 @@
 */
 
 <?php
-require_once '../lib/block_io.php';
+require __DIR__ . "/../vendor/autoload.php";
 
 $apiKey = getenv("API_KEY");
 $pin = 'NONE'; // Not Needed
 $version = 2; // the API version
 
-$block_io = new BlockIo($apiKey, $pin, $version);
+$block_io = new \BlockIo\Client($apiKey, $pin, $version);
 
 $from_address = getenv("FROM_ADDRESS");
 $to_address = getenv("TO_ADDRESS");

@@ -11,20 +11,26 @@
 */
 
 <?php
-require_once '../lib/block_io.php';
+require __DIR__ . "/../vendor/autoload.php";
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
 $apiKey = getenv("API_KEY");
 $pin = getenv("PIN");
 $version = 2; // the API version
 
-$block_io = new BlockIo($apiKey, $pin, $version);
+$block_io = new \BlockIo\Client($apiKey, $pin, $version);
 
 // create 4 keys for a 3 of 4 MultiSig address (1 key is Block.io's, added automatically by Block.io)
 
-$passphrases = [ strToHex('alpha1alpha2alpha3alpha4'), strToHex('alpha2alpha3alpha4alpha1'), strToHex('alpha3alpha4alpha1alpha2'), strToHex('alpha4alpha1alpha2alpha3') ];
-
-$keys = [ $block_io->initKey()->fromPassphrase($passphrases[0]), $block_io->initKey()->fromPassphrase($passphrases[1]), $block_io->initKey()->fromPassphrase($passphrases[2]), $block_io->initKey()->fromPassphrase($passphrases[3]) ];
+// generate these yourself: $key = $block_io->initKey(); $key->generateRandomPrivateKey();
+// store $key->getPrivateKey() and $key->getPublicKey() yourself before using them anywhere
+// below are EXAMPLE keys, INSECURE! DO NOT USE!
+$keys = [
+    $block_io->initKey()->fromHex("b515fd806a662e061b488e78e5d0c2ff46df80083a79818e166300666385c0a2"),
+    $block_io->initKey()->fromHex("001584b821c62ecdc554e185222591720d6fe651ed1b820d83f92cdc45c5e21f"),
+    $block_io->initKey()->fromHex("2f9090b8aa4ddb32c3b0b8371db1b50e19084c720c30db1d6bb9fcd3a0f78e61"),
+    $block_io->initKey()->fromHex("06c1cefdfd9187b36b36c3698c1362642083dcc1941dc76d751481d3aa29ca65")
+];
 
 // create an address with label 'dTrust1' that requires 3 of 4 signatures from the above keys
 

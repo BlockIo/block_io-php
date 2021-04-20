@@ -11,7 +11,7 @@ class EncryptDecryptTest extends TestCase
 
     protected function setUp(): void {
 	parent::setUp();
-	$this->blockio = new BlockIo("", "", 2);
+	$this->blockio = new \BlockIo\Client("", "", 2);
 	$this->aes_key = $this->blockio->pinToAesKey("deadbeef");
 	$this->b64_encrypted = "3wIJtPoC8KO6S7x6LtrN0g==";
 	$this->data_to_encrypt = "beadbeef";

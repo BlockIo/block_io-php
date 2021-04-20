@@ -18,6 +18,8 @@
         }
     ],
     "autoload": {
-    	"classmap": ["lib/"]
+        "psr-4": {
+	    "BlockIo\\": "lib"
+        }
     }
 }

@@ -10,7 +10,7 @@ class BasicWithWIFTest extends TestCase
     
     protected function setUp(): void {
 	parent::setUp();
-	$this->blockio = new BlockIo("", "", 2);
+	$this->blockio = new \BlockIo\Client("", "", 2);
 	$this->data_to_sign = "e76f0f78b7e7474f04cc14ad1343e4cc28f450399a79457d1240511a054afd63";
 	$this->key = $this->blockio->initKey()->fromWIF("L1cq4uDmSKMiViT4DuR8jqJv8AiiSZ9VeJr82yau5nfVQYaAgDdr");
     }

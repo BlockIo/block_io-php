@@ -11,14 +11,14 @@
 */
 
 <?php
-require_once '../lib/block_io.php';
+require __DIR__ . "/../vendor/autoload.php";
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. */
 $apiKey = getenv("API_KEY");
 $pin = "";
 $version = 2; // the API version
 
-$block_io = new BlockIo($apiKey, $pin, $version);
+$block_io = new \BlockIo\Client($apiKey, $pin, $version);
 $network = $block_io->get_balance()->data->network; // get our current network off Block.io
 
 $passphrase = strToHex('alpha1alpha2alpha3alpha4');

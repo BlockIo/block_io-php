@@ -10,14 +10,15 @@
 */
 
 <?php
-require_once '../lib/block_io.php';
+
+require __DIR__ . "/../vendor/autoload.php";
 
 /* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
 $apiKey = getenv("API_KEY");
 $pin = getenv("PIN");
 $version = 2; // the API version
 
-$block_io = new BlockIo($apiKey, $pin, $version);
+$block_io = new \BlockIo\Client($apiKey, $pin, $version);
 
 echo "*** Getting account balance\n";
 
