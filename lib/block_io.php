@@ -14,6 +14,31 @@ if (!extension_loaded('curl')) {
     throw new \Exception('cURL extension seems not to be installed');
 }
 
+if (!extension_loaded('mbstring')) {
+    throw new \Exception('mbstring extension seems not to be installed');
+}
+
+// include the external stuff we're using here
+use BitWasp\Bitcoin\Crypto\EcAdapter\Key\PrivateKeyInterface;
+use BitWasp\Bitcoin\Key\Factory\PrivateKeyFactory;
+use BitWasp\Bitcoin\Script\P2shScript;
+use BitWasp\Bitcoin\Script\ScriptFactory;
+use BitWasp\Bitcoin\Transaction\Factory\Signer;
+use BitWasp\Bitcoin\Transaction\Factory\TxBuilder;
+use BitWasp\Bitcoin\Transaction\OutPoint;
+use BitWasp\Bitcoin\Transaction\TransactionOutput;
+use BitWasp\Buffertools\Buffer;
+use BitWasp\Bitcoin\Network\NetworkFactory;
+use BitWasp\Bitcoin\Crypto\Hash;
+use BitWasp\Bitcoin\Address\AddressCreator;
+use BitWasp\Bitcoin\Script\WitnessScript;
+use BitWasp\Bitcoin\Script\WitnessProgram;
+use BitWasp\Bitcoin\Address\PayToPubKeyHashAddress;
+use BitWasp\Bitcoin\Address\SegwitAddress;
+use BitWasp\Bitcoin\Address\ScriptHashAddress;
+use BitWasp\Bitcoin\Transaction\Factory\SignData;
+use BitWasp\Bitcoin\Transaction\SignatureHash\SigHash;
+
 class BlockIo
 {
     
