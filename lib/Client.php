@@ -126,18 +126,8 @@ class Client
         $result = curl_exec($ch);
         curl_close($ch);
 
-        print $result . PHP_EOL;
-        
         $json_result = json_decode($result);
 
-        if (is_null($this->network) &&
-            property_exists($json_result, 'status') &&
-            $json_result->status == "success" &&
-            property_exists($json_result, 'data') &&
-            property_exists($json_result->data, 'network')) {
-            $this->network = $this->getNetwork($json_result->data->network);
-        }
-        
         // just give the response back to the user, no exceptions
         return $result;
 
@@ -150,6 +140,15 @@ class Client
         // if transaction has all required signatures, serializes the signed transaction
         // returns transaction hex and remaining signatures to append, if any
 
+        // set the proper network if it isn't already set yet
+        if (is_null($this->network) &&
+            property_exists($data, 'status') &&
+            $data->status == "success" &&
+            property_exists($data, 'data') &&
+            property_exists($data->data, 'network')) {
+            $this->network = $this->getNetwork($data->data->network);
+        }
+        
         $inputs = &$data->data->inputs;
         $outputs = &$data->data->outputs;
 
