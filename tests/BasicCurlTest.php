@@ -8,7 +8,7 @@ class BasicCurlTest extends TestCase
     
     protected function setUp(): void {
         parent::setUp();
-        $this->blockio = new \BlockIo\Client("", "", 2);
+        $this->blockio = new \BlockIo\Client("");
     }
     
     protected function tearDown(): void {
@@ -18,11 +18,12 @@ class BasicCurlTest extends TestCase
     public function testBadAPIKey()
     { // check that we're getting the appropriate data from Block.io via cURL
         
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Failed: Invalid API Key provided for this API version.");
+        $expected_response = json_decode('{"status":"fail","data":{"error_message":"Invalid API Key provided for this API version."}}');
         
-        $this->blockio->get_balance();
-        
+        $response = $this->blockio->get_balance();
+
+        $this->assertEquals($expected_response, $response);
+
     }
     
 }

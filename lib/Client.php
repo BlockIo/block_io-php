@@ -129,7 +129,7 @@ class Client
         $json_result = json_decode($result);
 
         // just give the response back to the user, no exceptions
-        return $result;
+        return $json_result;
 
     }
     
