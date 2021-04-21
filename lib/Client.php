@@ -5,6 +5,7 @@ namespace BlockIo;
 // include the external stuff we're using here
 use BitWasp\Bitcoin\Crypto\EcAdapter\Key\PrivateKeyInterface;
 use BitWasp\Bitcoin\Key\Factory\PrivateKeyFactory;
+use BitWasp\Bitcoin\Key\Factory\PublicKeyFactory;
 use BitWasp\Bitcoin\Script\P2shScript;
 use BitWasp\Bitcoin\Script\ScriptFactory;
 use BitWasp\Bitcoin\Transaction\Factory\Signer;
@@ -22,6 +23,8 @@ use BitWasp\Bitcoin\Address\SegwitAddress;
 use BitWasp\Bitcoin\Address\ScriptHashAddress;
 use BitWasp\Bitcoin\Transaction\Factory\SignData;
 use BitWasp\Bitcoin\Transaction\SignatureHash\SigHash;
+use BitWasp\Bitcoin\Amount;
+use BitWasp\Bitcoin\Signature\TransactionSignature;
 
 class Client
 {
@@ -31,21 +34,21 @@ class Client
      */
     
     private $api_key;
-    private $pin = "";
-    private $encryption_key = "";
+    private $pin;
+    private $encryption_key;
     private $version;
-    private $withdrawal_methods;
     private $sweep_methods;
+    private $network;
+    private $userKeys;
     
-    public function __construct($api_key, $pin, $api_version = 2)
+    public function __construct($api_key, $pin = null, $api_version = 2)
     { // the constructor
         $this->api_key = $api_key;
         $this->pin = $pin;
         $this->version = $api_version;
+        $this->userKeys = [];
         
-        $this->withdrawal_methods = array("withdraw", "withdraw_from_user", "withdraw_from_users", "withdraw_from_label", "withdraw_from_labels", "withdraw_from_address", "withdraw_from_addresses");
-        
-        $this->sweep_methods = array("sweep_from_address");
+        $this->sweep_methods = ["prepare_sweep_transaction"];
     }
     
     public function __call($name, array $args)
@@ -56,16 +59,12 @@ class Client
         if (empty($args)) { $args = array(); }
         else { $args = $args[0]; }
         
-        if ( in_array($name, $this->withdrawal_methods) )
-        { // it is a withdrawal method, let's do the client side signing bit
-            $response = $this->_internal_withdraw($name, $args);
-        }
-        elseif (in_array($name, $this->sweep_methods))
+        if (in_array($name, $this->sweep_methods))
         { // it is a sweep method
-	     	$response = $this->_internal_sweep($name, $args);
+	     	$response = $this->_internal_prepare_sweep_transaction($name, $args);
         }
         else
-        { // it is not a withdrawal method, let it go to Block.io
+        { // pass-through method to Block.io
             
             $response = $this->_request($name, $args);
         }
@@ -106,7 +105,7 @@ class Client
         // it's a GET method
         if ($method == 'GET') { $url .= '&' . $addedData; }
         
-        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enforce use of TLSv1.2
+        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enforce use of TLS >= v1.2
         curl_setopt($ch, CURLOPT_URL, $url);
         
         if ($method == 'POST')
@@ -126,15 +125,233 @@ class Client
         // Execute the cURL request
         $result = curl_exec($ch);
         curl_close($ch);
+
+        print $result . PHP_EOL;
         
         $json_result = json_decode($result);
+
+        if (is_null($this->network) &&
+            property_exists($json_result, 'status') &&
+            $json_result->status == "success" &&
+            property_exists($json_result, 'data') &&
+            property_exists($json_result->data, 'network')) {
+            $this->network = $this->getNetwork($json_result->data->network);
+        }
         
-        if ($json_result->status != 'success') { throw new \Exception('Failed: ' . $json_result->data->error_message); }
-        
-        // Spit back the response object or fail
-        return $result ? $json_result : false;        
+        // just give the response back to the user, no exceptions
+        return $result;
+
     }
     
+    public function create_and_sign_transaction($data, $keys = [])
+    {
+        // takes input from prepare_transaction, prepare_dtrust_transaction, prepare_sweep_transaction
+        // creates the transaction and signs it
+        // if transaction has all required signatures, serializes the signed transaction
+        // returns transaction hex and remaining signatures to append, if any
+
+        $inputs = &$data->data->inputs;
+        $outputs = &$data->data->outputs;
+
+        $unsigned = new TxBuilder();
+        
+        // create the transaction given inputs and outputs
+        foreach ($inputs as &$curInput) {
+            // create the inputs
+
+            $outpoint = new OutPoint(Buffer::hex($curInput->previous_txid), $curInput->previous_output_index);
+            $unsigned->spendOutPoint($outpoint);
+        
+        }
+
+        foreach ($outputs as &$curOutput) {
+            // create the outputs
+            print "spending " . $curOutput->output_value . " to " . $curOutput->receiving_address . PHP_EOL;
+            
+            $unsigned->output((new Amount)->toSatoshis($curOutput->output_value),
+                              (new AddressCreator())->fromString($curOutput->receiving_address, $this->network)->getScriptPubKey());
+            
+        }
+
+        // parse input address data
+        $addressSignData = [];
+        
+        // we need address pubkeys to make the appropriate signatures
+        $addressPubKeys = [];
+        
+        foreach($data->data->input_address_data as &$curAddressData) {
+            // create the SignData for each address
+
+            $curAddressType = &$curAddressData->address_type;
+            $signData = null;
+            
+            if ($curAddressType == "P2WSH-over-P2SH" || $curAddressType == "WITNESS_V0" || $curAddressType == "P2SH") {
+                // multisig address
+
+                $curPubKeys = [];
+
+                foreach($curAddressData->public_keys as &$curPubKey) {
+                    array_push($curPubKeys, (new PublicKeyFactory)->fromHex($curPubKey));
+                }
+                
+                $multisig = ScriptFactory::scriptPubKey()->multisig($curAddressData->required_signatures, $curPubKeys, false); // don't sort
+
+                if ($curAddressType == "P2SH") {
+                    $signData = (new SignData())->p2sh(new P2shScript($multisig));
+                } elseif ($curAddressType == "P2WSH-over-P2SH") {
+                    $signData = (new SignData())->p2sh(new P2shScript(new WitnessScript($multisig)))->p2wsh(new WitnessScript($multisig));
+                } else {
+                    // WITNESS_V0
+                    $signData = (new SignData())->p2wsh(new WitnessScript($multisig));
+                }
+
+            } elseif ($curAddressType == "P2PKH" || $curAddressType == "P2WPKH-over-P2SH" || $curAddressType == "P2WPKH") {
+
+                $curPubKey = (new PublicKeyFactory())->fromHex($curAddressData->public_keys[0]);
+                $curPubKeyHash = $curPubKey->getPubKeyHash();
+
+                // for P2PKH and P2WPKH, the library handles the signData itself, so leave it null
+                    
+                if ($curAddressType == "P2WPKH-over-P2SH") {
+                    $signData = (new SignData())->p2sh(ScriptFactory::scriptPubKey()->p2wkh($curPubKeyHash()));
+                }
+                                
+            } else {
+                throw new \Exception("Unrecognized address type: " . $curAddressType);
+            }
+
+            // record the SignData for later use
+            
+            $addressSignData[$curAddressData->address] = $signData;
+            $addressPubKeys[$curAddressData->address] = &$curAddressData->public_keys;
+            
+        }
+
+        // extract the private key from encrypted_passphrase if it's provided
+        // append it to the keys provided
+
+        if (!is_null($this->pin)) {
+            // user provided a pin, so let's try to decrypt stuff
+
+            // get our encryption key ready
+            if (is_null($this->encryption_key))
+            {
+                $this->encryption_key = $this->pinToAesKey($this->pin);
+            }
+            
+            if (property_exists($data->data, 'user_key') && !array_key_exists($data->data->user_key->public_key, $this->userKeys)) {
+                // the encrypted key is provided in the response, and we don't have the decrypted key yet
+
+                // decrypt the data
+                $passphrase = $this->decrypt($data->data->user_key->encrypted_passphrase, $this->encryption_key);
+                
+                // extract the key
+                $key = $this->initKey();
+                $key->fromPassphrase($passphrase);
+                
+                // is this the right public key?
+                if ($key->getPublicKey() != $data->data->user_key->public_key) { throw new \Exception('Fail: Invalid Secret PIN provided.'); }
+                
+                $this->userKeys[$key->getPublicKey()] = $key; // $key is \BlockIo\BlockKey object
+            }
+
+        }
+        
+        // add the user supplied private keys
+        foreach($keys as &$curKey) {
+            $key = $this->initKey();
+            $key->fromHex($curKey);
+
+            $this->userKeys[$key->getPublicKey()] = $key; // $key is \BlockIo\BlockKey object
+        }
+
+        $signer = new Signer($unsigned->get());
+        $signatures = []; // the signature we will return to Block.io unless the transaction is already complete
+        $readyToGo = true;
+        
+        // sign the transaction with whatever we have
+        foreach($inputs as &$curInput) {
+            
+            $curSignData = $addressSignData[$curInput->spending_address];
+
+            $txOut = new TransactionOutput((new Amount())->toSatoshis($curInput->input_value),
+                                           (new AddressCreator())->fromString($curInput->spending_address, $this->network)->getScriptPubKey());
+
+            $signerInput = $signer->input($curInput->input_index, $txOut, $curSignData);
+            $curSigHash = $signerInput->getSigHash(SigHash::ALL)->getHex(); // sighash in hex form
+
+            $curPubKeys = $addressPubKeys[$curInput->spending_address];
+
+            $curPubKeyIndex = 0;
+            $ecAdapter = \BitWasp\Bitcoin\Bitcoin::getEcAdapter(); // we need this to add our own low-S and low-R signatures
+
+            foreach($curPubKeys as &$curPubKey) {
+                if (array_key_exists($curPubKey, $this->userKeys)) {
+                    // we have the key for this public key
+                    // use it to sign this input
+
+                    print "signing input " . $curInput->input_index . " with pubkey=" . $curPubKey . PHP_EOL;
+                    
+                    //                    $signerInput->sign((new PrivateKeyFactory)->fromHexCompressed($this->userKeys[$curPubKey]->getPrivateKey()));
+
+                    //                    print "old=" . $signerInput->getSignatures()[$curPubKeyIndex]->getSignature()->getHex() . PHP_EOL;
+
+                    // find index for current public key
+                    // use index to set signature ->setSignature(pubkeyidx, TransactionSignatureInterface)
+                    //                    transactionsignatureinterface = new \Signature\TransactionSignature(EcAdapterInterface, SignatureInterface, SIGHASH::ALL)
+                    // signatureinterface = \EcAdapter\Signature\Signature(ecAdapter, GMPr, GMPs)
+
+                    // get GMPr GMPs from BlockKey
+                    // uses low S and low R
+                    $points = $this->userKeys[$curPubKey]->getSignatureHashPoints($curSigHash);
+                    //                    print json_encode($points) . PHP_EOL;
+                    //print gmp_init($points['R'], 16) . PHP_EOL;
+
+                    $ecadapter_signature_signature = new \BitWasp\Bitcoin\Crypto\EcAdapter\Impl\PhpEcc\Signature\Signature($ecAdapter, gmp_init($points['R'], 16), gmp_init($points['S'], 16));
+                    $transaction_signature = new TransactionSignature($ecAdapter, $ecadapter_signature_signature, SigHash::ALL);
+
+                    if (count($signerInput->getSteps()) != 1) {
+                        throw new \Exception("Unexpected number of steps: " . count($signerInput->getSteps()) . ". Please report this error to support@block.io.");
+                    }
+
+                    if ($signerInput->step(0) instanceof \BitWasp\Bitcoin\Transaction\Factory\CheckSig) {
+                        // we can modify Checksig objects
+                        // they're the ones that contain the appropriate pubkeys and signatures for a script
+                        $signerInput->step(0)->setSignature($curPubKeyIndex, $transaction_signature);
+
+                        print "new=" . $signerInput->getSignatures()[$curPubKeyIndex]->getSignature()->getHex() . PHP_EOL;
+
+                        array_push($signatures,
+                                   array("input_index" => $curInput->input_index,
+                                         "public_key" => $curPubKey,
+                                         "signature" => $signerInput->getSignatures()[$curPubKeyIndex]->getSignature()->getHex()));
+                        
+                    } else {
+                        throw new \Exception("Current step is not a Checksig. Please report this error to support@block.io.");
+                    }
+                    
+                }
+
+                $curPubKeyIndex += 1;
+            }
+
+            // is this input fully signed?
+            $readyToGo = ($readyToGo && $signerInput->isFullySigned());
+        }
+
+        $response = array("tx_type" => $data->data->tx_type, "tx_hex" => null, "signatures" => null);
+        
+        if ($readyToGo) {
+            $response["signatures"] = []; // no signatures left to append
+            $response["tx_hex"] = $signer->get()->getHex();
+        } else {
+            $response["signatures"] = $signatures;
+            $response["tx_hex"] = $unsigned->get()->getHex();
+        }
+        
+        return $response;
+        
+    }
     
     private function _internal_withdraw($name, $args = array())
     { // withdraw method to be called by __call
@@ -241,6 +458,22 @@ class Client
     public function initKey()
     { // grants a new Key object
         return new BlockKey();
+    }
+
+    private function getNetwork($n)
+    { // returns the appropriate BitWasp Network object
+
+        $nf = (new NetworkFactory());
+        
+        if ($n == "BTCTEST") { $nf = $nf->bitcoinTestnet(); }
+        elseif ($n == "LTCTEST") { $nf = $nf->litecoinTestnet(); }
+        elseif ($n == "DOGETEST") { $nf = $nf->dogecoinTestnet(); }
+        elseif ($n == "BTC") { $nf = $nf->bitcoin(); }
+        elseif ($n == "LTC") { $nf = $nf->litecoin(); }
+        elseif ($n == "DOGE") { $nf = $nf->dogecoin(); }
+        else { throw new \Exception("Invalid network found: " . $n); }
+
+        return $nf;
     }
     
     private function pbkdf2($password, $key_length, $salt = "", $rounds = 1024, $a = 'sha256') 
