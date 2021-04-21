@@ -789,8 +789,9 @@ class BlockKey
      * @param String Hex $k
      * @throws \Exception
      */
-    public function setPrivateKey($k)
-    {
+    private function setPrivateKey($k)
+    { // enforce 64 char hex strings, so don't allow use of this directly
+        
         //private key has to be passed as an hexadecimal number
         if(gmp_cmp(gmp_init($k, 16), gmp_sub($this->n, gmp_init(1, 10))) == 1)
         {
@@ -801,11 +802,14 @@ class BlockKey
 
     public function fromHex($pp)
     {
-        if (preg_match("/^[a-f0-9]{64}$/", $pp) != 1) {
+
+        $paddedpp = str_pad($pp, 64, "0", STR_PAD_LEFT);
+        
+        if (preg_match("/^[a-f0-9]{64}$/", $paddedpp) != 1) {
             throw new \Exception('Private Key must be hexadecimal and 64 characters long');
         }
         
-        $this->setPrivateKey($pp);
+        $this->setPrivateKey($paddedpp);
         
         return $this;
         
@@ -815,10 +819,9 @@ class BlockKey
     {  // take a sha256 hash of the passphrase, and then set it as the private key
         
         $hashed = hash('sha256', hex2bin($pp));
-        
-        $this->setPrivateKey($hashed);
-        
-        return $this;
+
+        return $this->fromHex($hashed);
+
     }
     
     public function fromWif($pp)

@@ -13,9 +13,9 @@ class PrepareTransactionTest extends TestCase
         $this->blockio = new \BlockIo\Client("", "d1650160bd8d2bb32bebd139d0063eb6063ffa2f9e4501ad", 2);
         $this->dtrust_keys = [
             "b515fd806a662e061b488e78e5d0c2ff46df80083a79818e166300666385c0a2",
-            "001584b821c62ecdc554e185222591720d6fe651ed1b820d83f92cdc45c5e21f",
+            "1584b821c62ecdc554e185222591720d6fe651ed1b820d83f92cdc45c5e21f",
             "2f9090b8aa4ddb32c3b0b8371db1b50e19084c720c30db1d6bb9fcd3a0f78e61",
-            "06c1cefdfd9187b36b36c3698c1362642083dcc1941dc76d751481d3aa29ca65"
+            "6c1cefdfd9187b36b36c3698c1362642083dcc1941dc76d751481d3aa29ca65"
         ];
 
         $key = $this->blockio->initKey();
