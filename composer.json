@@ -10,7 +10,8 @@
 	"bitwasp/bitcoin": "dev-minimal",
         "ext-gmp": "*",
         "ext-curl": "*",
-	"ext-bcmath": "*"
+	"ext-bcmath": "*",
+	"ext-mbstring": "*"
     },
     "repositories": [
         {
