@@ -5,6 +5,7 @@
    3. Withdraw 1% of total available balance in your account, and send it to the address labeled 'shibetime1'
    
    IMPORTANT! Specify your own API Key and Secret PIN in this code. Keep your Secret PIN safe at all times.
+   IMPORTANT! You will perform your own error checking for API calls.
 
    Contact support@block.io for any help with this.
 */
@@ -22,8 +23,6 @@ $block_io = new \BlockIo\Client($apiKey, $pin, $version);
 
 echo "*** Getting account balance\n";
 
-$getBalanceInfo = "";
-
 $getBalanceInfo = $block_io->get_balance();
     
 echo "!!! Using Network: " . $getBalanceInfo->data->network . PHP_EOL;
@@ -33,8 +32,11 @@ echo "*** Create new address" . PHP_EOL;
 
 $getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
 
-echo "New Address: " . $getNewAddressInfo->data->address . PHP_EOL;
-echo "Label: " . $getNewAddressInfo->data->label . PHP_EOL;
+if ($getNewAddressInfo->status == "success") {
+    // if the call didn't succeed, the address was already created before
+    echo "New Address: " . $getNewAddressInfo->data->address . PHP_EOL;
+    echo "Label: " . $getNewAddressInfo->data->label . PHP_EOL;
+}
 
 echo "Getting address for Label='shibetime1'" . PHP_EOL;
 $getAddressInfo = $block_io->get_address_by_label(array('label' => 'shibetime1'));
@@ -73,8 +75,10 @@ $create_and_sign_transaction_response = $block_io->create_and_sign_transaction($
 // once satisfied, submit the transaction to Block.io so Block.io can append its signatures and broadcast the transaction to the peer-to-peer network
 $submit_transaction_response = $block_io->submit_transaction(array('transaction_data' => $create_and_sign_transaction_response));
 
-echo "Status: " . $submit_transaction_response->status . PHP_EOL;
-
-echo "Executed Transaction ID: " . $submit_transaction_response->data->txid . PHP_EOL;
+if ($submit_transaction_response->status == "success") {
+    echo "Executed Transaction ID: " . $submit_transaction_response->data->txid . PHP_EOL;
+} else {
+    echo "Transaction failed to execute: " . json_encode($submit_transaction_response) . PHP_EOL;
+}
 
 ?>

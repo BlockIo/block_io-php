@@ -2,7 +2,8 @@
    Must specify the 'private_key' in Wallet Import Format (WIF).
    
    IMPORTANT! Specify your own API Key. Your Private Key never goes to Block.io.
-
+   IMPORTANT! You will perform your own error checking for API calls.
+   
    Contact support@block.io for any help with this.
 */
 
@@ -33,7 +34,7 @@ $response = $block_io->submit_transaction(array('transaction_data' => $create_an
 
 // if we got here, we succeeded
 // otherwise handle errors yourself from the responses
-echo "Status: " . $response->data->status . PHP_EOL;
+echo "Status: " . $response->status . PHP_EOL;
 echo "Executed Transaction ID: " . $response->data->txid . PHP_EOL;
 
 ?>

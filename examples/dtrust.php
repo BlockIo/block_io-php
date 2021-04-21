@@ -6,6 +6,7 @@
    3. Withdraw coins from MultiSig address back into the sending address in (2)   
 
    IMPORTANT! Specify your own API Key and Secret PIN in this code. Keep your Secret PIN safe at all times.
+   IMPORTANT! You will perform your own error checking for API calls.
 
    Contact support@block.io for any help with this.
 */
@@ -13,7 +14,7 @@
 <?php
 require __DIR__ . "/../vendor/autoload.php";
 
-/* Replace the $apiKey with the API Key from your Block.io Wallet. A different API key exists for Dogecoin, Dogecoin Testnet, Litecoin, Litecoin Testnet, etc. */
+// Replace the $apiKey with the LTCTEST API Key from your Block.io Wallet. If not using LTCTEST in this example, you will need to modify the amounts used below. 
 $apiKey = getenv("API_KEY");
 $pin = getenv("PIN");
 $version = 2; // the API version
@@ -38,17 +39,18 @@ $keys = [
 $pubKeys = [];
 
 foreach($keys as &$curKey) {
-    array_push($block_io->initKey()->fromHex($curKey)->getPublicKey(), $pubKeys);
+    array_push($pubKeys, $block_io->initKey()->fromHex($curKey)->getPublicKey());
 }
-
-$dTrustAddress = "";
 
 echo "*** Creating Address with 4 Signers, and 3 Required Signatures: " . PHP_EOL;
 
-$response = $block_io->get_new_dtrust_address(array('label' => 'dTrust1', 'public_keys' => implode($pubKeys, ','), 'required_signatures' => 3 ));
-$dTrustAddress = $response->data->address;
+$response = $block_io->get_new_dtrust_address(array('label' => 'dTrust1', 'public_keys' => implode(",", $pubKeys), 'required_signatures' => 3 ));
+$dTrustAddress = null;
 
-if (is_null($dTrustAddress)) {
+if ($response->status == "success") {
+    // we created the address successfully
+    $dTrustAddress = $response->data->address;
+} else {
     // no address retrieved
     // the label must exist, let's get its address then
     $dTrustAddress = $block_io->get_dtrust_address_by_label(array('label' => 'dTrust1'))->data->address;
@@ -58,7 +60,7 @@ echo "*** Address with Label=dTrust1: " . $dTrustAddress . PHP_EOL;
 
 // let's deposit some testnet coins into this address
 // IMPORTANT: see notes in examples/basic.php for these steps and what they mean
-$prepare_transaction_response = $block_io->prepare_transaction(array('amounts' => '5.1', 'to_address' => $dTrustAddress));
+$prepare_transaction_response = $block_io->prepare_transaction(array('amounts' => '0.001', 'to_address' => $dTrustAddress));
 $create_and_sign_transaction_response = $block_io->create_and_sign_transaction($prepare_transaction_response);
 $submit_transaction_response = $block_io->submit_transaction(array('transaction_data' => $create_and_sign_transaction_response));
 echo "*** Deposit Proof (Tx ID): " . $submit_transaction_response->data->txid . PHP_EOL;
@@ -79,7 +81,7 @@ echo "**** Destination Address: " . $destAddress . PHP_EOL;
 
 // let's withdraw coins from the dTrust address into the $destAddress
 // note that for dTrust, the endpoint if prepare_dtrust_transaction, not prepare_transaction
-$prepare_transaction_response = $block_io->prepare_dtrust_transaction(array('from_labels' => 'dTrust1', 'to_address' => $destAddress, 'amount' => '2.0'));
+$prepare_transaction_response = $block_io->prepare_dtrust_transaction(array('from_labels' => 'dTrust1', 'to_address' => $destAddress, 'amount' => '0.0009'));
 
 // we're going to sign with just 3 of our keys, and then Block.io will sign with its key
 // alternatively, you can sign with all 4 of your keys and then either broadcast the transaction through Block.io or anywhere else you prefer

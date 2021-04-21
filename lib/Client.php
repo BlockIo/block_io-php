@@ -51,11 +51,16 @@ class Client
         $this->sweep_methods = ["prepare_sweep_transaction"];
     }
     
-    public function __call($name, array $args)
+    public function __call($name, $args = array())
     { // method_missing for PHP
-        
+
+        if (!is_array($args)) {
+            throw new \Exception("Must specify arguments as an associative array.");
+        }
+
         $response = "";
-        
+
+        // extract the arguments provided
         if (empty($args)) { $args = array(); }
         else { $args = $args[0]; }
         
@@ -74,22 +79,13 @@ class Client
     }
     
     /**
-     * cURL GET request driver
+     * cURL POST request driver
      */
-    private function _request($path, $args = array(), $method = 'POST')
+    private function _request($path, $args = array())
     {
         // Generate cURL URL
         $url =  str_replace("API_CALL",$path,"https://block.io/api/v" . $this->version . "/API_CALL/?api_key=") . $this->api_key;
-        $addedData = "";
-        
-        foreach ($args as $pkey => $pval)
-        {
-            
-            if (strlen($addedData) > 0) { $addedData .= '&'; }
-            
-            $addedData .= $pkey . "=" . $pval;
-        }
-        
+
         // Initiate cURL and set headers/options
         $ch  = curl_init();
         
@@ -102,19 +98,15 @@ class Client
         	curl_setopt($ch, CURLOPT_CAINFO, $pemfile);
         }
         
-        // it's a GET method
-        if ($method == 'GET') { $url .= '&' . $addedData; }
-        
         curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enforce use of TLS >= v1.2
         curl_setopt($ch, CURLOPT_URL, $url);
         
-        if ($method == 'POST')
-        { // this was a POST method
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $addedData);
-        }
+        // this was a POST method
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($args));
         
         $headers = array(
+            'Content-Type: application/json',
             'Accept: application/json',
             'User-Agent: php:block_io:2.0.x'
         );
