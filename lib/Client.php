@@ -337,110 +337,28 @@ class Client
             $response["signatures"] = $signatures;
             $response["tx_hex"] = $unsigned->get()->getHex();
         }
+
+        // reset $this->userKeys once we're done signing stuff
+        $this->userKeys = [];
         
         return $response;
         
     }
     
-    private function _internal_withdraw($name, $args = array())
-    { // withdraw method to be called by __call
-        
-        unset ($args['pin']); // make sure no inadvertent passing of pin occurs
-        
-        $response = $this->_request($name,$args);
-        
-        if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
-        { // we have signatures to append
-            
-            // get our encryption key ready
-            if (strlen($this->encryption_key) == 0)
-            {
-                $this->encryption_key = $this->pinToAesKey($this->pin);
-            }
-            
-            // decrypt the data
-            $passphrase = $this->decrypt($response->data->encrypted_passphrase->passphrase, $this->encryption_key);
-            
-            // extract the key
-            $key = $this->initKey();
-            $key->fromPassphrase($passphrase);
-            
-            // is this the right public key?
-            if ($key->getPublicKey() != $response->data->encrypted_passphrase->signer_public_key) { throw new \Exception('Fail: Invalid Secret PIN provided.'); }
-            
-            // grab inputs
-            $inputs = &$response->data->inputs;
-            
-            // data to sign
-            foreach ($inputs as &$curInput)
-            { // for each input
-                
-                $data_to_sign = &$curInput->data_to_sign;
-                
-                foreach ($curInput->signers as &$signer)
-                { // for each signer
-                    
-                    if ($key->getPublicKey() == $signer->signer_public_key)
-                    {
-                        $signer->signed_data = $key->signHash($data_to_sign);
-                    }		
-                    
-                }
-                
-            }
-            
-            $json_string = json_encode($response->data);
-            
-            // let's send the signed data back to Block.io
-            $response = $this->_request('sign_and_finalize_withdrawal', array('signature_data' => $json_string));
-            
-        }
-        
-        return $response;
-    }
-    
-    private function _internal_sweep($name, $args = array())
+    private function _internal_prepare_sweep_transaction($name, $args = array())
     { // sweep method to be called by __call
         
         $key = $this->initKey()->fromWif($args['private_key']);
-        
+
         unset($args['private_key']); // remove the key so we don't send it to anyone outside
         
         $args['public_key'] = $key->getPublicKey();
+
+        // store this key for later use
+        $this->userKeys[$key->getPublicKey()] = $key;
         
         $response = $this->_request($name,$args);
-        
-        if ($response->status == 'success' && property_exists($response->data, 'reference_id'))
-        { // we have signatures to append
-            
-            // grab inputs
-            $inputs = &$response->data->inputs;
-            
-            // data to sign
-            foreach ($inputs as &$curInput)
-            { // for each input
-                
-                $data_to_sign = &$curInput->data_to_sign;
-                
-                foreach ($curInput->signers as &$signer)
-                { // for each signer
-                    
-                    if ($key->getPublicKey() == $signer->signer_public_key)
-                    {
-                        $signer->signed_data = $key->signHash($data_to_sign);
-                    }		
-                    
-                }
-                
-            }
-            
-            $json_string = json_encode($response->data);
-            
-            // let's send the signed data back to Block.io
-            $response = $this->_request('sign_and_finalize_sweep', array('signature_data' => $json_string));
-            
-        }
-        
+
         return $response;
     }
     

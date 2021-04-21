@@ -24,69 +24,57 @@ echo "*** Getting account balance\n";
 
 $getBalanceInfo = "";
 
-try {
-    $getBalanceInfo = $block_io->get_balance();
+$getBalanceInfo = $block_io->get_balance();
     
-    echo "!!! Using Network: ".$getBalanceInfo->data->network."\n";
-    echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
-} catch (Exception $e) {
-   echo $e->getMessage() . "\n";
-}
+echo "!!! Using Network: " . $getBalanceInfo->data->network . PHP_EOL;
+echo "Available Amount: " . $getBalanceInfo->data->available_balance . " " . $getBalanceInfo->data->network . PHP_EOL;
 
-echo "\n\n";
+echo "*** Create new address" . PHP_EOL;
 
+$getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
 
-echo "*** Create new address\n";
+echo "New Address: " . $getNewAddressInfo->data->address . PHP_EOL;
+echo "Label: " . $getNewAddressInfo->data->label . PHP_EOL;
 
-$getNewAddressInfo = "";
+echo "Getting address for Label='shibetime1'" . PHP_EOL;
+$getAddressInfo = $block_io->get_address_by_label(array('label' => 'shibetime1'));
+echo "Status: " . $getAddressInfo->status . PHP_EOL;
 
-try {
-    $getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
+echo "Label has Address: " . $block_io->get_address_by_label(array('label' => 'shibetime1'))->data->address . PHP_EOL;
 
-    echo "New Address: ".$getNewAddressInfo->data->address."\n";
-    echo "Label: ".$getNewAddressInfo->data->label."\n";
-} catch (Exception $e) {
-    echo $e->getMessage() . "\n";
-}
-
-echo "\n\n";
-
-try {
-    echo "Getting address for Label='shibetime1'\n";
-    $getAddressInfo = $block_io->get_address_by_label(array('label' => 'shibetime1'));
-    echo "Status: ".$getAddressInfo->status."\n";
-} catch (Exception $e) {
-    echo $e->getMessage() . "\n";
-}
-
-echo "Label has Address: " . $block_io->get_address_by_label(array('label' => 'shibetime1'))->data->address . "\n";
-
-echo "\n\n";
-
-echo "***Send 1% of coins on my account to the address labeled 'shibetime1'\n";
+echo "***Send 1% of coins on my account to the address labeled 'shibetime1'" . PHP_EOL;
 
 // Use high decimal precision for any math on coins. They can be 8 decimal places at most, or the system will reject them as invalid amounts.
 $sendAmount = bcmul($getBalanceInfo->data->available_balance, '0.01', 8); 
 
-echo "Available Amount: ".$getBalanceInfo->data->available_balance." ".$getBalanceInfo->data->network."\n";
+echo "Available Amount: " . $getBalanceInfo->data->available_balance . " " . $getBalanceInfo->data->network . PHP_EOL;
 
 # detour: let's get an estimate of the network fee we'll need to pay for this transaction
 # use the same parameters you will provide to the withdrawal method get an accurate response
 $estNetworkFee = $block_io->get_network_fee_estimate(array('to_address' => $getAddressInfo->data->address, 'amount' => $sendAmount));
 
-echo "Estimated Network Fee: " . $estNetworkFee->data->estimated_network_fee . " " . $estNetworkFee->data->network . "\n";
+echo "Estimated Network Fee: " . $estNetworkFee->data->estimated_network_fee . " " . $estNetworkFee->data->network . PHP_EOL;
 
-echo "Withdrawing 1% of Available Amount: ".$sendAmount." ".$getBalanceInfo->data->network."\n";
+echo "Withdrawing 1% of Available Amount: " . $sendAmount . " " . $getBalanceInfo->data->network . PHP_EOL;
 
-try {
-    $withdrawInfo = $block_io->withdraw(array('to_address' => $getAddressInfo->data->address, 'amount' => $sendAmount));
-    echo "Status: ".$withdrawInfo->status."\n";
+// prepare the transaction
+// this response will contain instructions on how to create the transaction you want
+// inspect it and make sure everything's as you expect
+// network fee = sum of inputs - sum of outputs
+// if there's any Block.io fee, it will be in the outputs with category='blockio-fee'
+$prepare_transaction_response = $block_io->prepare_transaction(array('to_address' => $getAddressInfo->data->address, 'amount' => $sendAmount));
 
-    echo "Executed Transaction ID: ".$withdrawInfo->data->txid."\n";
-    echo "Block.io Fee Charged: ".$withdrawInfo->data->blockio_fee." ".$withdrawInfo->data->network."\n";
-    echo "Network Fee Charged: ".$withdrawInfo->data->network_fee." ".$withdrawInfo->data->network."\n";
-} catch (Exception $e) {
-   echo $e->getMessage() . "\n";
-}
+// once satisfied, create the transaction and sign it
+// this response will contain the transaction payload that you want Block.io to sign,
+// and the signatures you want to append to the transaction
+// make sure the payload is what you want it to be
+$create_and_sign_transaction_response = $block_io->create_and_sign_transaction($prepare_transaction_response);
+
+// once satisfied, submit the transaction to Block.io so Block.io can append its signatures and broadcast the transaction to the peer-to-peer network
+$submit_transaction_response = $block_io->submit_transaction(array('transaction_data' => $create_and_sign_transaction_response));
+
+echo "Status: " . $submit_transaction_response->status . PHP_EOL;
+
+echo "Executed Transaction ID: " . $submit_transaction_response->data->txid . PHP_EOL;
 
 ?>

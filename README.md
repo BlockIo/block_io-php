@@ -1,91 +1,32 @@
 Block.io PHP
 ===========
 
-**Current Release**: 1.3.5
+**Current Release**: 2.0.0
+**08/21/21**: BREAKING CHANGES. Interfaces have changed, and API responses no longer throw exceptions. Test thoroughly before use. You will manage exceptions yourself.
 
-**09/12/20**: Change _withdraw and _sweep names for further disambiguation from actual API endpoints.  
-**08/15/20**: Add cURL headers for requests.  
-**07/03/20**: Use implode() instead of join() to remove PHP7.4 warning.  
-**07/01/20**: Use low R signatures by default.  
-**06/02/20**: Replace deprecated array_key_exists. Tested for PHP7.2, PHP7.3, PHP7.4. Support for earlier (EOL) versions of PHP is not guaranteed.  
-**05/10/19**: Minor updates. Tested for PHP7.x.  
-**09/10/17**: Replace mCrypt with OpenSSL. PHP5.6+ only.  
-**02/06/17**: Enforce use of TLSv1.2.  
-**01/29/15**: Added support for getting Wallet Import Format private keys from custom keys.  
-**01/19/15**: Added support for sweeping legacy keys.  
-**01/09/15**: Added sweep functionality.  
-**11/03/14**: Fix DER signature encoding. Now stable.  
-**18/10/14**: Enforcing Determinism in Signatures (RFC6979), also using BIP62 to hinder transaction malleability.  
-**15/10/14**: Enforce use of TLSv1, step away from the vulnerable SSLv3.  
-**10/10/14**: Added 3 of 4 MultiSig example.  
-**09/28/14**: Updated for v2 handling.  
-
-PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). API key validation on instantiation, simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
+PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). Simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.
 
 ### Requirements
 
-This library requires the 'gmp', and cURL extensions for PHP. To enable these extensions, see:
-   
-   [GMP Installation Guide](http://php.net/manual/en/gmp.installation.php)
-
-   [cURL Installation Guide](http://php.net/manual/en/curl.installation.php)
+This library requires: gmp, cURL, mbstring, and bcmath extensions.
 
 ### Warning
 
-If you're using Windows, beware that SSL will not function properly, and this library will throw errors.  
-
-To fix the SSL issue on Windows, please do the following:
-
-Download http://curl.haxx.se/ca/cacert.pem to a directory of your choice  
-Make PHP use this file to validate Block.io's SSL certificate by adding this line to your php.ini:
-
-```ini
-curl.cainfo=c:\path\to\cacert.pem
-```
+Untested on Windows. Make sure all PHPUnit tests pass if you're using Windows at all.
 
 ### Usage
 
 First, sign up for an account at [Block.io](https://block.io/) and take note of your API key under Account > Dashboard.
 
-Download and include the block_io.php class:
-
-```php
-require_once 'path/to/block_io.php';
-```
-
-Or preferably install via [Composer](https://getcomposer.org/)
+Install via [Composer](https://getcomposer.org/)
 
 ```sh
 composer require block_io-php/block_io-php
 ```
 
-Instantiate the class and set your API key. If the API key is valid the set function will return true otherwise false.
+See examples/ and https://block.io/api/simple/php for basic usage.
 
-```php
-$apiKey = "YOUR API KEY FOR DOGECOIN, BITCOIN, OR LITECOIN";
-$pin = "YOUR SECRET PIN";
-$version = 2; // the API version to use
-
-$block_io = new BlockIo($apiKey, $pin, $version);
-
-echo "Confirmed Balance: " . $block_io->get_balance()->data->available_balance . "\n";
-```
-
-The wrapper abstracts all methods listed at https://block.io/api/php using the same interface names. For example, to get your current account balance:
-
-```php
-$balance = $block_io->get_balance(array('label' => 'default'));
-echo $balance->data->available_balance . "\n";
-```
-
-To make requests that require parameters (eg. an address label or address to withdraw to), pass through each parameter in an associative array. For example, the request below will withdraw 50 DOGE to the wallet you specify in place of `WALLET-ADDRESS-HERE`:
-
-```php
-$withdraw = $block_io->withdraw(array('amount' => '50.0', 'to_address' => 'WALLET-ADDRESS-HERE'));
-```
-
-**Note:** This library throws Exceptions when calls fail. Implement try/catch blocks, and retrieve the Exception message to see details.
-
+**Note:** This library will *not* throw exceptions on API call failures. Implement your own error checking logic.
 
 Please see [Block.io PHP Docs](https://block.io/api/simple/php) for details on available calls.
 

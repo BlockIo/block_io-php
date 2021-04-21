@@ -26,108 +26,69 @@ $block_io = new \BlockIo\Client($apiKey, $pin, $version);
 // store $key->getPrivateKey() and $key->getPublicKey() yourself before using them anywhere
 // below are EXAMPLE keys, INSECURE! DO NOT USE!
 $keys = [
-    $block_io->initKey()->fromHex("b515fd806a662e061b488e78e5d0c2ff46df80083a79818e166300666385c0a2"),
-    $block_io->initKey()->fromHex("001584b821c62ecdc554e185222591720d6fe651ed1b820d83f92cdc45c5e21f"),
-    $block_io->initKey()->fromHex("2f9090b8aa4ddb32c3b0b8371db1b50e19084c720c30db1d6bb9fcd3a0f78e61"),
-    $block_io->initKey()->fromHex("06c1cefdfd9187b36b36c3698c1362642083dcc1941dc76d751481d3aa29ca65")
+    "b515fd806a662e061b488e78e5d0c2ff46df80083a79818e166300666385c0a2",
+    "001584b821c62ecdc554e185222591720d6fe651ed1b820d83f92cdc45c5e21f",
+    "2f9090b8aa4ddb32c3b0b8371db1b50e19084c720c30db1d6bb9fcd3a0f78e61",
+    "06c1cefdfd9187b36b36c3698c1362642083dcc1941dc76d751481d3aa29ca65"
 ];
 
 // create an address with label 'dTrust1' that requires 3 of 4 signatures from the above keys
+// calculate the public keys
+// the order of these public keys matters, so make sure the array above is in the correct order of your choosing first
+$pubKeys = [];
 
-$pubKeyStr = $keys[0]->getPublicKey() . "," . $keys[1]->getPublicKey() . "," . $keys[2]->getPublicKey() . "," . $keys[3]->getPublicKey();
+foreach($keys as &$curKey) {
+    array_push($block_io->initKey()->fromHex($curKey)->getPublicKey(), $pubKeys);
+}
 
 $dTrustAddress = "";
 
-echo "*** Creating Address with 4 Signers, and 3 Required Signatures: " . "\n";
+echo "*** Creating Address with 4 Signers, and 3 Required Signatures: " . PHP_EOL;
 
-try {
-    $response = $block_io->get_new_dtrust_address(array('label' => 'dTrust1', 'public_keys' => $pubKeyStr, 'required_signatures' => 3 ));
-    $dTrustAddress = $response->data->address;
-} catch (Exception $e) {
+$response = $block_io->get_new_dtrust_address(array('label' => 'dTrust1', 'public_keys' => implode($pubKeys, ','), 'required_signatures' => 3 ));
+$dTrustAddress = $response->data->address;
 
-    // print the exception below for debugging
-    // echo "Exception: " . $e->getMessage() . "\n";
-    
+if (is_null($dTrustAddress)) {
+    // no address retrieved
     // the label must exist, let's get its address then
     $dTrustAddress = $block_io->get_dtrust_address_by_label(array('label' => 'dTrust1'))->data->address;
 }
 
-echo "*** Address with Label=dTrust1: " . $dTrustAddress . "\n";
+echo "*** Address with Label=dTrust1: " . $dTrustAddress . PHP_EOL;
 
 // let's deposit some testnet coins into this address
-
-try {
-    $response = $block_io->withdraw(array('amounts' => '5.1', 'to_addresses' => $dTrustAddress));
-    echo "*** Deposit Proof (Tx ID): " . $response->data->txid . "\n";
-} catch (Exception $e) {
-    echo "Exception: " . $e->getMessage() . "\n";
-}
+// IMPORTANT: see notes in examples/basic.php for these steps and what they mean
+$prepare_transaction_response = $block_io->prepare_transaction(array('amounts' => '5.1', 'to_address' => $dTrustAddress));
+$create_and_sign_transaction_response = $block_io->create_and_sign_transaction($prepare_transaction_response);
+$submit_transaction_response = $block_io->submit_transaction(array('transaction_data' => $create_and_sign_transaction_response));
+echo "*** Deposit Proof (Tx ID): " . $submit_transaction_response->data->txid . PHP_EOL;
 
 // let's get our dtrust address' balance
 
 $response = $block_io->get_dtrust_address_balance(array('label' => 'dTrust1'));
 
-echo "*** dTrust1 Available Balance: " . $response->data->available_balance . " " . $response->data->network . "\n\n";
+echo "*** dTrust1 Available Balance: " . $response->data->available_balance . " " . $response->data->network . PHP_EOL;
 
-echo "*** Beginning Withdrawal from dTrust1 to Testnet Default Address: " . "\n";
+echo "*** Beginning Withdrawal from dTrust1 to Testnet Default Address: " . PHP_EOL;
 
 // let's withdraw coins from dTrust1 and send to the non-dTrust address labeled 'default'
 
 $destAddress = $block_io->get_address_by_label(array('label' => 'default'))->data->address;
 
-echo "**** Destination Address: " . $destAddress . "\n";
+echo "**** Destination Address: " . $destAddress . PHP_EOL;
 
-$response = $block_io->withdraw_from_dtrust_address(array('from_labels' => 'dTrust1', 'to_addresses' => $destAddress, 'amounts' => '2.0'));
+// let's withdraw coins from the dTrust address into the $destAddress
+// note that for dTrust, the endpoint if prepare_dtrust_transaction, not prepare_transaction
+$prepare_transaction_response = $block_io->prepare_dtrust_transaction(array('from_labels' => 'dTrust1', 'to_address' => $destAddress, 'amount' => '2.0'));
 
-echo "*** Inputs to sign? " . count($response->data->inputs) . "\n";
+// we're going to sign with just 3 of our keys, and then Block.io will sign with its key
+// alternatively, you can sign with all 4 of your keys and then either broadcast the transaction through Block.io or anywhere else you prefer
+$create_and_sign_transaction_response = $block_io->create_and_sign_transaction($prepare_transaction_response, array_slice($keys, 0, 3)); // sign with only 3 of our keys
 
-$refid = $response->data->reference_id;
-
-$counter = 0;
-
-// let's sign all the inputs we can, one key at a time
-foreach ($keys as &$key) {
-
-	foreach ($response->data->inputs as &$input) {
-		// iterate over all the inputs
-	
-		$dataToSign = $input->data_to_sign; // the script sig we need to sign
-
-		foreach ($input->signers as &$signer) {
-			// iterate over all the signers for this input
-
-			// find the key that can sign for the signer_public_key
-			if ($key->getPublicKey() == $signer->signer_public_key)
-			{ // we found the key, let's sign the data
-			  
-			  $signer->signed_data = $key->signHash($dataToSign);
-			  
-			  echo "* Data Signed By " . $key->getPublicKey() . "\n";
-			}
-		}
-	}
-
-	// all the data's signed for this public key, let's give it to Block.io
-	$json_string = json_encode($response->data);
-
-    	$r1 = $block_io->sign_transaction(array('signature_data' => $json_string));
-
-	echo "* Send signatures for " . $key->getPublicKey() . "? " . $r1->status . "\n";
-
-	$counter += 1; // we've signed using an additional key, let's note that down 
-
-	// let's just use 3 signatures, since we created an address that required 3 of 4 signatures
-	if ($counter == 3) { break; }
-}
-
-try {
-    // now that everyone's signed the transaction, let's finalize (broadcast) it
-
-    $response = $block_io->finalize_transaction(array('reference_id' => $refid));
-
-    echo "*** dTrust Withdrawal Proof (Tx ID): " . $response->data->txid . "\n";
-} catch (Exception $e) {
-    echo "Exception: " . $e->getMessage() . "\n";
-}
+// now submit the transaction payload, and signatures left to append (if any) to Block.io
+// if the transaction is not final, Block.io will append its own key's signature to this payload
+// otherwise it will just broadcast the final payload to the peer-to-peer network
+$submit_transaction_response = $block_io->submit_transaction(array('transaction_data' => $create_and_sign_transaction_response));
+echo "*** dTrust Withdrawal Proof (Tx ID): " . $submit_transaction_response->data->txid . PHP_EOL;
 
 ?>
