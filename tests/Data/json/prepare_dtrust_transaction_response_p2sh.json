@@ -1,0 +1,45 @@
+{
+  "status": "success",
+  "data": {
+    "network": "LTCTEST",
+    "tx_type": "dtrust",
+    "inputs": [
+      {
+        "input_index": 0,
+        "previous_txid": "0a574a50754e5acc410d83acbfa19d1d29837c8326d444c2f1aee4e3c05d9634",
+        "previous_output_index": 1,
+        "input_value": "0.00936600",
+        "spending_address": "QZVSzPeaEJxB9bYuDEL7iWrHSdGbAP3pXV"
+      }
+    ],
+    "outputs": [
+      {
+        "output_index": 0,
+        "output_category": "user-specified",
+        "output_value": "0.00020000",
+        "receiving_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "output_index": 1,
+        "output_category": "change",
+        "output_value": "0.00904900",
+        "receiving_address": "QZVSzPeaEJxB9bYuDEL7iWrHSdGbAP3pXV"
+      }
+    ],
+    "input_address_data": [
+      {
+        "required_signatures": 4,
+        "public_keys": [
+          "02c59aa2350d024c456bb5047df28a5cc73fe2799999ed11035adff1dd24eb035a",
+          "02510e29d51e9a4268e6a5253c1fbd8144857945b82acb0accfc235cc7ca36da11",
+          "0201a819bf549c253c4397bdd1535374de39e9bc278f637afdc27642d52cf79139",
+          "039e3aa9ea182ccdaff2d8d150010b27cc4765c1d55ce674e52631af7376354d62",
+          "03ee980e6334142342fcd9e6facfecfa139981e2276584c91d6a9739d533ac99fc"
+        ],
+        "address": "QZVSzPeaEJxB9bYuDEL7iWrHSdGbAP3pXV",
+        "address_type": "P2SH"
+      }
+    ],
+    "estimated_tx_size": 585
+  }
+}

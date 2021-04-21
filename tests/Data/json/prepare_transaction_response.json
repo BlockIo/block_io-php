@@ -1,0 +1,164 @@
+{
+  "status": "success",
+  "data": {
+    "network": "LTCTEST",
+    "tx_type": "basic",
+    "inputs": [
+      {
+        "input_index": 0,
+        "previous_txid": "17b236a68dcb0b338b0d11c2551004917dac868eb8e203715c5cf099c2655473",
+        "previous_output_index": 0,
+        "input_value": "0.00020000",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 1,
+        "previous_txid": "0a574a50754e5acc410d83acbfa19d1d29837c8326d444c2f1aee4e3c05d9634",
+        "previous_output_index": 0,
+        "input_value": "0.00020000",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 2,
+        "previous_txid": "020974d1337bb7ba94a3c8df60b9b559e2bbc66652262cf1d85abd7d1a67118f",
+        "previous_output_index": 0,
+        "input_value": "0.00020000",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 3,
+        "previous_txid": "cd85a6b9859d998fdeedc3389359c4b069734f8ce227ea65c2f081020d9c95f3",
+        "previous_output_index": 1,
+        "input_value": "0.00618893",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 4,
+        "previous_txid": "4cbe6f4beed21ce4260d350922af62d49c097ed206d5fc94a06ff660fc035546",
+        "previous_output_index": 0,
+        "input_value": "0.00020000",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 5,
+        "previous_txid": "027a5e03c4472c79a90ddb10e755082237af2dc75362e91f1c56b597ce495fe8",
+        "previous_output_index": 1,
+        "input_value": "0.01215660",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 6,
+        "previous_txid": "e1ffcd79dfae5c12f44a3a759014a24693b739fefd6aa8fb14f5066ed5b14c14",
+        "previous_output_index": 0,
+        "input_value": "0.00020000",
+        "spending_address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw"
+      },
+      {
+        "input_index": 7,
+        "previous_txid": "e37ef8c258318664d68d1ece81573030f6547fddb8db386f857d662918523a34",
+        "previous_output_index": 0,
+        "input_value": "0.00500000",
+        "spending_address": "QUMD2qFssQKXGiTPJqPpGXhBeNuXxjrt1b"
+      },
+      {
+        "input_index": 8,
+        "previous_txid": "e37ef8c258318664d68d1ece81573030f6547fddb8db386f857d662918523a34",
+        "previous_output_index": 1,
+        "input_value": "0.10577860",
+        "spending_address": "QgAhHtRN25P334nZqg7GaqQ6oDZEBmdGpT"
+      },
+      {
+        "input_index": 9,
+        "previous_txid": "f30d8aecb0d0d5508a484403cf52e8e3b0b111b9cab646592e1ee009d00139af",
+        "previous_output_index": 0,
+        "input_value": "0.00500000",
+        "spending_address": "QRSVjcGho5ToUPhJ1xMPMArWrzxXLBWVcD"
+      },
+      {
+        "input_index": 10,
+        "previous_txid": "2ae18dd3edb286f41eeb0b001a9bebb84ef49c845930ec0b879da2793e934af8",
+        "previous_output_index": 0,
+        "input_value": "0.05234567",
+        "spending_address": "tltc1q9ptjkd7rujg8q6pzt2xuv9tevzjfnmltes9ygasxxj3enyvmhskqxprm44"
+      }
+    ],
+    "outputs": [
+      {
+        "output_index": 0,
+        "output_category": "user-specified",
+        "output_value": "0.12345678",
+        "receiving_address": "tltc1qxwtaq6y866rk9rz4s8reltfwvkgj0xsxx43smkrk45ekep4usm2q3kqsjy"
+      },
+      {
+        "output_index": 1,
+        "output_category": "user-specified",
+        "output_value": "0.01234567",
+        "receiving_address": "QTLcyTFrH7T6kqUsi1VV2mJVXmX3AmwUNH"
+      },
+      {
+        "output_index": 2,
+        "output_category": "user-specified",
+        "output_value": "0.00123456",
+        "receiving_address": "QgYm5tLdYBaVYiGdhq2XdpwEazSVQQZ5Ya"
+      },
+      {
+        "output_index": 3,
+        "output_category": "change",
+        "output_value": "0.05009359",
+        "receiving_address": "tltc1q9ptjkd7rujg8q6pzt2xuv9tevzjfnmltes9ygasxxj3enyvmhskqxprm44"
+      }
+    ],
+    "input_address_data": [
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "0293e2e2c8ffa27cdb686a169ac02edd4cd72845da4080a2c3a25fc1d81f3a1541",
+          "03f2e51b2f298bab1e4485d7d31a559de73fc29dced12f568e30264dbae4ec326e"
+        ],
+        "address": "QcnYiN3t3foHxHv7CnqXrmRoiMkADhapZw",
+        "address_type": "P2WSH-over-P2SH"
+      },
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "0366b0a62cf55af8fab2c20ac61c8ce0e21577b9502e83af0955ac706fa395e1a9",
+          "03f2e51b2f298bab1e4485d7d31a559de73fc29dced12f568e30264dbae4ec326e"
+        ],
+        "address": "QUMD2qFssQKXGiTPJqPpGXhBeNuXxjrt1b",
+        "address_type": "P2SH"
+      },
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "02d0ac8192c1bb328c7b1a46cc6974b903995ed4b9746b77ca06c20a9e16b95b8f",
+          "03f2e51b2f298bab1e4485d7d31a559de73fc29dced12f568e30264dbae4ec326e"
+        ],
+        "address": "QgAhHtRN25P334nZqg7GaqQ6oDZEBmdGpT",
+        "address_type": "P2WSH-over-P2SH"
+      },
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "0327bba51878eb35200f2a15e4a3724d675074eb64610aab109c9ded35b0625128",
+          "03f2e51b2f298bab1e4485d7d31a559de73fc29dced12f568e30264dbae4ec326e"
+        ],
+        "address": "QRSVjcGho5ToUPhJ1xMPMArWrzxXLBWVcD",
+        "address_type": "P2WSH-over-P2SH"
+      },
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "035bb6a1cb961a9b54e666a366b896dac3ec9ad352a57714ffb22b45dabaed702b",
+          "03f2e51b2f298bab1e4485d7d31a559de73fc29dced12f568e30264dbae4ec326e"
+        ],
+        "address": "tltc1q9ptjkd7rujg8q6pzt2xuv9tevzjfnmltes9ygasxxj3enyvmhskqxprm44",
+        "address_type": "WITNESS_V0"
+      }
+    ],
+    "user_key": {
+      "public_key": "03f2e51b2f298bab1e4485d7d31a559de73fc29dced12f568e30264dbae4ec326e",
+      "encrypted_passphrase": "3FmrhIEX7tV46alsRuMonmLHPIX7hBSMCQmZKcVt2a3pcgDG4cmwLjaiDPJzIAPtBI9NZ5ybnO824EOzreak9bxzPhg/D2CFhGZAl+Iq3RzURwhY6kQ6kdtj5G///5UlJgY17SQa8/i+TXwLj5/AOfNIfMU0QUxVzSsfAJO3VfH9QioLnUJW5ZH1OkSdM849"
+    },
+    "estimated_tx_size": 1696
+  }
+}
