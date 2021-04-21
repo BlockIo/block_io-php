@@ -165,7 +165,6 @@ class Client
 
         foreach ($outputs as &$curOutput) {
             // create the outputs
-            print "spending " . $curOutput->output_value . " to " . $curOutput->receiving_address . PHP_EOL;
             
             $unsigned->output((new Amount)->toSatoshis($curOutput->output_value),
                               (new AddressCreator())->fromString($curOutput->receiving_address, $this->network)->getScriptPubKey());
@@ -212,7 +211,7 @@ class Client
                 // for P2PKH and P2WPKH, the library handles the signData itself, so leave it null
                     
                 if ($curAddressType == "P2WPKH-over-P2SH") {
-                    $signData = (new SignData())->p2sh(ScriptFactory::scriptPubKey()->p2wkh($curPubKeyHash()));
+                    $signData = (new SignData())->p2sh(ScriptFactory::scriptPubKey()->p2wkh($curPubKeyHash));
                 }
                                 
             } else {
@@ -288,23 +287,11 @@ class Client
                 if (array_key_exists($curPubKey, $this->userKeys)) {
                     // we have the key for this public key
                     // use it to sign this input
-
-                    print "signing input " . $curInput->input_index . " with pubkey=" . $curPubKey . PHP_EOL;
+                    // PHPECC does not use low R signatures yet, so we'll generate our own and append them
                     
-                    //                    $signerInput->sign((new PrivateKeyFactory)->fromHexCompressed($this->userKeys[$curPubKey]->getPrivateKey()));
-
-                    //                    print "old=" . $signerInput->getSignatures()[$curPubKeyIndex]->getSignature()->getHex() . PHP_EOL;
-
-                    // find index for current public key
-                    // use index to set signature ->setSignature(pubkeyidx, TransactionSignatureInterface)
-                    //                    transactionsignatureinterface = new \Signature\TransactionSignature(EcAdapterInterface, SignatureInterface, SIGHASH::ALL)
-                    // signatureinterface = \EcAdapter\Signature\Signature(ecAdapter, GMPr, GMPs)
-
                     // get GMPr GMPs from BlockKey
                     // uses low S and low R
                     $points = $this->userKeys[$curPubKey]->getSignatureHashPoints($curSigHash);
-                    //                    print json_encode($points) . PHP_EOL;
-                    //print gmp_init($points['R'], 16) . PHP_EOL;
 
                     $ecadapter_signature_signature = new \BitWasp\Bitcoin\Crypto\EcAdapter\Impl\PhpEcc\Signature\Signature($ecAdapter, gmp_init($points['R'], 16), gmp_init($points['S'], 16));
                     $transaction_signature = new TransactionSignature($ecAdapter, $ecadapter_signature_signature, SigHash::ALL);
@@ -317,8 +304,11 @@ class Client
                         // we can modify Checksig objects
                         // they're the ones that contain the appropriate pubkeys and signatures for a script
                         $signerInput->step(0)->setSignature($curPubKeyIndex, $transaction_signature);
-
-                        print "new=" . $signerInput->getSignatures()[$curPubKeyIndex]->getSignature()->getHex() . PHP_EOL;
+                        
+                        if ($signerInput->step(0)->getType() === \BitWasp\Bitcoin\Script\ScriptType::P2PKH) {
+                            // https://github.com/Bit-Wasp/bitcoin-php/blob/1.0/src/Transaction/Factory/InputSigner.php#L977
+                            $signerInput->step(0)->setKey($curPubKeyIndex, (new PublicKeyFactory())->fromHex($this->userKeys[$curPubKey]->getPublicKey()));
+                        }
 
                         array_push($signatures,
                                    array("input_index" => $curInput->input_index,
@@ -341,7 +331,7 @@ class Client
         $response = array("tx_type" => $data->data->tx_type, "tx_hex" => null, "signatures" => null);
         
         if ($readyToGo) {
-            $response["signatures"] = []; // no signatures left to append
+            // no signatures to append
             $response["tx_hex"] = $signer->get()->getHex();
         } else {
             $response["signatures"] = $signatures;
