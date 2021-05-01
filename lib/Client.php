@@ -121,7 +121,7 @@ class Client
         $json_result = json_decode($result);
 
         if ($json_result->status != 'success') {
-            $e = new \BlockIo\APIException("Failed: " . $json_result->data->error_message);
+            $e = new APIException("Failed: " . $json_result->data->error_message);
             $e->setRawData($json_result);
             throw $e;
         }
