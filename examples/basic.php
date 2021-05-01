@@ -30,12 +30,12 @@ echo "Available Amount: " . $getBalanceInfo->data->available_balance . " " . $ge
 
 echo "*** Create new address" . PHP_EOL;
 
-$getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
+$getNewAddressInfo = "";
 
-if ($getNewAddressInfo->status == "success") {
-    // if the call didn't succeed, the address was already created before
-    echo "New Address: " . $getNewAddressInfo->data->address . PHP_EOL;
-    echo "Label: " . $getNewAddressInfo->data->label . PHP_EOL;
+try {
+    $getNewAddressInfo = $block_io->get_new_address(array('label' => 'shibetime1'));
+} catch(\BlockIo\APIException $e) {
+    print json_encode($e->getRawData()) . PHP_EOL;
 }
 
 echo "Getting address for Label='shibetime1'" . PHP_EOL;
@@ -62,10 +62,12 @@ echo "Withdrawing 1% of Available Amount: " . $sendAmount . " " . $getBalanceInf
 // prepare the transaction
 // this response will contain instructions on how to create the transaction you want
 // inspect it and make sure everything's as you expect
-// network fee = sum of inputs - sum of outputs
-// if there's any Block.io fee, it will be in the outputs with category='blockio-fee'
 $prepare_transaction_response = $block_io->prepare_transaction(array('to_address' => $getAddressInfo->data->address, 'amount' => $sendAmount));
 
+// the summary of the prepared transaction
+// for in-depth data, inspect the $prepare_transaction_response directly
+print json_encode($block_io->summarize_prepared_transaction($prepare_transaction_response)) . PHP_EOL;
+      
 // once satisfied, create the transaction and sign it
 // this response will contain the transaction payload that you want Block.io to sign,
 // and the signatures you want to append to the transaction

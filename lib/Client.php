@@ -120,9 +120,55 @@ class Client
 
         $json_result = json_decode($result);
 
-        // just give the response back to the user, no exceptions
-        return $json_result;
+        if ($json_result->status != 'success') {
+            $e = new \BlockIo\APIException("Failed: " . $json_result->data->error_message);
+            $e->setRawData($json_result);
+            throw $e;
+        }
 
+        // Spit back the response object or fail
+        return $result ? $json_result : false;
+        
+    }
+
+    public function summarize_prepared_transaction($data)
+    {
+        // takes input from prepare_transaction, prepare_dtrust_transaction, prepare_sweep_transaction
+        // returns information: blockio_fee, network_fee, total_amount_to_send
+
+        $input_sum = "0.00000000";
+        $blockio_fee = "0.00000000";
+        $network_fee = "0.00000000";
+        $change_amount = "0.00000000";
+        $output_sum = "0.00000000";
+        
+        foreach ($data->data->inputs as $curInput) {
+            // sum the input values
+            $input_sum = bcadd($input_sum, $curInput->input_value, 8);
+        }
+
+        foreach ($data->data->outputs as $curOutput) {
+            // sum the output values
+
+            if ($curOutput->output_category == "change") {
+                $change_amount = bcadd($change_amount, $curOutput->output_value, 8);
+            } elseif ($curOutput->output_category == "blockio-fee") {
+                $blockio_fee = bcadd($blockio_fee, $curOutput->output_value, 8);
+            } else {
+                // user-specified
+                $output_sum = bcadd($output_sum, $curOutput->output_value, 8);
+            }
+            
+        }
+
+        $response = array(
+            'network' => $data->data->network,
+            'network_fee' => bcsub(bcsub(bcsub($input_sum, $blockio_fee, 8), $change_amount, 8), $output_sum, 8),
+            'blockio_fee' => $blockio_fee,
+            'total_amount_to_send' => $output_sum
+        );
+
+        return $response;
     }
     
     public function create_and_sign_transaction($data, $keys = [])
@@ -163,6 +209,11 @@ class Client
             
         }
 
+        if (property_exists($data->data, 'expected_unsigned_txid') && !is_null($data->data->expected_unsigned_txid) && $data->data->expected_unsigned_txid != $unsigned->get()->getTxId()->getHex()) {
+            // some protection against misbeahving machines/code for tx serialization
+            throw new \Exception("Expected unsigned transaction ID mismatch. Please report this error to support@block.io.");
+        }
+        
         // parse input address data
         $addressSignData = [];
         

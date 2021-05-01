@@ -44,13 +44,19 @@ foreach($keys as &$curKey) {
 
 echo "*** Creating Address with 4 Signers, and 3 Required Signatures: " . PHP_EOL;
 
-$response = $block_io->get_new_dtrust_address(array('label' => 'dTrust1', 'public_keys' => implode(",", $pubKeys), 'required_signatures' => 3 ));
+$response = "";
 $dTrustAddress = null;
 
-if ($response->status == "success") {
+try {
+    $response = $block_io->get_new_dtrust_address(array('label' => 'dTrust1', 'public_keys' => implode(",", $pubKeys), 'required_signatures' => 3 ));
+
     // we created the address successfully
     $dTrustAddress = $response->data->address;
-} else {
+
+} catch (\BlockIo\APIException $e) {
+    print $e->getMessage() . PHP_EOL;
+    print json_encode($e->getRawData()) . PHP_EOL;
+    
     // no address retrieved
     // the label must exist, let's get its address then
     $dTrustAddress = $block_io->get_dtrust_address_by_label(array('label' => 'dTrust1'))->data->address;

@@ -19,11 +19,13 @@ class BasicCurlTest extends TestCase
     { // check that we're getting the appropriate data from Block.io via cURL
         
         $expected_response = json_decode('{"status":"fail","data":{"error_message":"Invalid API Key provided for this API version."}}');
-        
-        $response = $this->blockio->get_balance();
 
-        $this->assertEquals($expected_response, $response);
-
+        try {
+            $response = $this->blockio->get_balance();
+            throw new \Exception("Test failed.");
+        } catch (\BlockIo\APIException $e) {
+            $this->assertEquals($e->getRawData(), $expected_response);
+        }
     }
     
 }

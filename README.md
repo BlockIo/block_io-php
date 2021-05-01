@@ -24,7 +24,5 @@ composer require block_io-php/block_io-php
 
 See examples/ and https://block.io/api/simple/php for basic usage.
 
-**Note:** This library will *not* throw exceptions on API call failures. Implement your own error checking logic.
-
 Please see [Block.io PHP Docs](https://block.io/api/simple/php) for details on available calls.
 
