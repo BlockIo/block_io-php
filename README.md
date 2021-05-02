@@ -2,13 +2,13 @@ Block.io PHP
 ===========
 
 **Current Release**: 2.0.0  
-**08/21/21**: BREAKING CHANGES. Interfaces have changed, and API responses no longer throw exceptions. Test thoroughly before use. You will manage exceptions yourself.  
+**08/21/21**: BREAKING CHANGES. Interfaces have changed, and API responses no longer throw exceptions. Test thoroughly before use.
 
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). Simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.  
 
 ### Requirements
 
-This library requires: gmp, cURL, mbstring, and bcmath extensions. PHP7.2, PHP7.3, PHP7.4, or PHP8.0. 
+This library requires: gmp, cURL, mbstring, and bcmath extensions. PHP7.2, PHP7.3, PHP7.4, or PHP8.0.
 
 ### Warning
 
