@@ -19,11 +19,3 @@
     }
   ]
 }
- -- 
-{
-  "status": "success",
-  "data": {
-    "network": "LTCTEST",
-    "txid": "334038f488a684e0960058548670732d753c9a9ee2fcb4a98e1f71de2b753be1"
-  }
-}
