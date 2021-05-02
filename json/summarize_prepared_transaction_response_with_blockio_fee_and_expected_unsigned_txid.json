@@ -1,0 +1,6 @@
+{
+  "network": "LTCTEST",
+  "network_fee": "0.00010220",
+  "blockio_fee": "0.00012345",
+  "total_amount_to_send": "0.01234500"
+}
