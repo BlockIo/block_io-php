@@ -28,6 +28,39 @@ class PrepareTransactionTest extends TestCase
         parent::tearDown();
     }
 
+    public function testSummarizePreparedTransaction() {
+        // tests summarize_prepared_transaction response
+
+        $prepare_transaction_response = json_decode(file_get_contents(__DIR__ . "/Data/json/prepare_transaction_response_with_blockio_fee_and_expected_unsigned_txid.json"), false);
+        $summarize_prepared_transaction_response = json_decode(file_get_contents(__DIR__ . "/Data/json/summarize_prepared_transaction_response_with_blockio_fee_and_expected_unsigned_txid.json"), true);
+
+        $response = $this->blockio->summarize_prepared_transaction($prepare_transaction_response);
+
+        $this->assertEquals($summarize_prepared_transaction_response, $response);
+        
+    }
+    
+    public function testUseOfExpectedUnsignedTxid() {
+        // tests whether library uses expected_unsigned_txid properly
+
+        $prepare_transaction_response = json_decode(file_get_contents(__DIR__ . "/Data/json/prepare_transaction_response_with_blockio_fee_and_expected_unsigned_txid.json"), false);
+        $create_and_sign_transaction_response = json_decode(file_get_contents(__DIR__ . "/Data/json/create_and_sign_transaction_response_with_blockio_fee_and_expected_unsigned_txid.json"), true);
+
+        // this should succeed
+        $response = $this->blockio->create_and_sign_transaction($prepare_transaction_response);
+        $this->assertEquals($create_and_sign_transaction_response, $response);
+
+        // this should fail: the expected unsigned transaction ID won't match
+        $prepare_transaction_response->data->expected_unsigned_txid .= 'x';
+
+        try {
+            $response = $this->blockio->create_and_sign_transaction($prepare_transaction_response);
+            $this->assertEquals(true, false); // fails test
+        } catch (\Exception $e) {
+            $this->assertEquals($e->getMessage(), "Expected unsigned transaction ID mismatch. Please report this error to support@block.io.");
+        }
+    }
+    
     public function testDTrustP2SH3of5UnorderedKeys() {
         // test for partial signatures (unordered) (P2SH)
 
