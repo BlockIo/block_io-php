@@ -1,0 +1,76 @@
+{
+  "status": "success",
+  "data": {
+    "network": "LTCTEST",
+    "tx_type": "basic",
+    "inputs": [
+      {
+        "input_index": 0,
+        "previous_txid": "5d5d9a902f572449786ce65a586481dfa646f66f8500cadbed811eaf82370630",
+        "previous_output_index": 0,
+        "input_value": "0.00249485",
+        "spending_address": "Qjgm6PfqcCmQr31DKnnch7zwG7sFpVc7xb"
+      },
+      {
+        "input_index": 1,
+        "previous_txid": "adc348dcfed62799718e375d9097fa71d2a321c9137c4a52067a13181203ead4",
+        "previous_output_index": 0,
+        "input_value": "0.00090000",
+        "spending_address": "QN7WkTwGmTxEnK4EpzsspPofsKPXvjLKxC"
+      },
+      {
+        "input_index": 2,
+        "previous_txid": "9ffa4dceac8b09fb099fb0ebcc5d0bcb132c98b3e8a2b1381d8d9654f82a5cf0",
+        "previous_output_index": 1,
+        "input_value": "0.17464160",
+        "spending_address": "QN7WkTwGmTxEnK4EpzsspPofsKPXvjLKxC"
+      }
+    ],
+    "outputs": [
+      {
+        "output_index": 0,
+        "output_category": "user-specified",
+        "output_value": "0.01234500",
+        "receiving_address": "QN9ShoLwKTnW7ms7bfSrH7YgMPh2cjUkdi"
+      },
+      {
+        "output_index": 1,
+        "output_category": "blockio-fee",
+        "output_value": "0.00012345",
+        "receiving_address": "tltc1qyhn4wkpzt0e8qm7a9kk8v0cpxn775wlqfgl32s20n00p3q5q7uksc4xqfe"
+      },
+      {
+        "output_index": 2,
+        "output_category": "change",
+        "output_value": "0.16546580",
+        "receiving_address": "QN7WkTwGmTxEnK4EpzsspPofsKPXvjLKxC"
+      }
+    ],
+    "input_address_data": [
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "0325e036e22b3ee1593baba8052e92505a11446a1ba3e8bc3f9f74b17f2e6b6a3e",
+          "034309721935937713a2dd1c33c5c44a10a30674bebe0542aeb145ce4c9790e742"
+        ],
+        "address": "Qjgm6PfqcCmQr31DKnnch7zwG7sFpVc7xb",
+        "address_type": "P2WSH-over-P2SH"
+      },
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "03b934de0933b8b80051530d353f5fb22ec7e5d6233d8b6bf2ddcaf7119e2f4fe7",
+          "034309721935937713a2dd1c33c5c44a10a30674bebe0542aeb145ce4c9790e742"
+        ],
+        "address": "QN7WkTwGmTxEnK4EpzsspPofsKPXvjLKxC",
+        "address_type": "P2WSH-over-P2SH"
+      }
+    ],
+    "user_key": {
+      "public_key": "034309721935937713a2dd1c33c5c44a10a30674bebe0542aeb145ce4c9790e742",
+      "encrypted_passphrase": "UMT6oOUQf/hRNCdiSc3HAHRdn95G9iSxvU5pqTCveqaQxpVShoyCBfgDOfzbgrk3Cw4oNY0sBStoWqCc4ha4kFXBblt/6DzxV7YBD2lDkjGYdrYISrGG+kAHEbLxcVwHL/6Feep9ve3NgvCSEV0MTrm2HBNfX1ke/+XBoYhn7ZX9QioLnUJW5ZH1OkSdM849"
+    },
+    "estimated_tx_size": 511,
+    "expected_unsigned_txid": "4ee43869f50d226686a0ad0949e4adeb02f4d93bb7ea2efda62dfc36f2a1b0b7"
+  }
+}
