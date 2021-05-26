@@ -2,7 +2,7 @@ Block.io PHP
 ===========
 
 **Current Release**: 2.0.0  
-**08/21/21**: BREAKING CHANGES. Interfaces have changed, and API responses no longer throw exceptions. Test thoroughly before use.
+**05/27/21**: BREAKING CHANGES. Interfaces have changed, and API responses no longer throw exceptions. Test thoroughly before use.
 
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). Simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.  
 
