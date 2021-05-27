@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 2.0.0  
+**Current Release**: 2.0.1  
 **05/27/21**: BREAKING CHANGES. Transaction interfaces have changed. Test thoroughly before use.
 
 PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dogecoin.com/), [Bitcoin](http://bitcoin.org/), and [Litecoin](http://litecoin.org). Simple abstraction layer on top of existing API interfaces, and automatic JSON decoding on response.  
@@ -19,7 +19,18 @@ Make sure all PHPUnit tests pass before using this library on your system.
 Install via [Composer](https://getcomposer.org/)
 
 ```sh
-composer require block_io-php/block_io-php
+{
+    "require":{
+	"block_io-php/block_io-php": "2.0.1",
+	"bitwasp/bitcoin": "dev-minimal"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/doersf/bitcoin-php.git"
+        }
+    ]
+}
 ```
 
 See examples/ and https://block.io/api/simple/php for basic usage.
