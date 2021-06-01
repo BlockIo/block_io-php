@@ -93,7 +93,7 @@ class Client
         if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
         	$pemfile = dirname(realpath(__FILE__)) . DIRECTORY_SEPARATOR . 'cacert.pem';
         	if(!file_exists($pemfile)) {
-        		throw new Exception("Needed .pem file not found. Please download the .pem file at http://curl.haxx.se/ca/cacert.pem and save it as " . $pemfile);
+        		throw new \Exception("Needed .pem file not found. Please download the .pem file at http://curl.haxx.se/ca/cacert.pem and save it as " . $pemfile);
         	}        	
         	curl_setopt($ch, CURLOPT_CAINFO, $pemfile);
         }
