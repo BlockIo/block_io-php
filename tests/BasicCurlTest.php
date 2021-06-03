@@ -18,13 +18,13 @@ class BasicCurlTest extends TestCase
     public function testBadAPIKey()
     { // check that we're getting the appropriate data from Block.io via cURL
         
-        $expected_response = json_decode('{"status":"fail","data":{"error_message":"API Key invalid or you have not enabled API access for this machine\'s IP address(es). Check that your API Keys are correct, and that you have enabled API access for this machine\'s IP Address(es) on your account\'s Settings page."}}');
+        $expected_error_message = "API Key invalid or you have not enabled API access for this machine's IP address(es). Check that your API Keys are correct, and that you have enabled API access for this machine's IP Address(es) on your account's Settings page.";
 
         try {
             $response = $this->blockio->get_balance();
             throw new \Exception("Test failed.");
         } catch (\BlockIo\APIException $e) {
-            $this->assertEquals($e->getRawData(), $expected_response);
+            $this->assertEquals($e->getRawData()->data->error_message, $expected_error_message);
         }
     }
     
