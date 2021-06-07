@@ -84,7 +84,21 @@ class EncryptDecryptTest extends TestCase
         $this->assertEquals($this->blockio->pinToAesKey("deadbeef", 500000, "922445847c173e90667a19d90729e1fb", "SHA256", 16, 32),
                             "f206403c6bad20e1c8cb1f3318e17cec5b2da0560ed6c7b26826867452534172");
     }
-    
+
+    public function testDynamicExtractKeyAes256Ecb() {
+        $user_key = json_decode('{"encrypted_passphrase":"3wIJtPoC8KO6S7x6LtrN0g==","public_key":"02f87f787bffb30396984cb6b3a9d6830f32d5b656b3e39b0abe4f3b3c35d99323","algorithm":{"pbkdf2_salt":"","pbkdf2_iterations":2048,"pbkdf2_hash_function":"SHA256","pbkdf2_phase1_key_length":16,"pbkdf2_phase2_key_length":32,"aes_iv":null,"aes_cipher":"AES-256-ECB","aes_auth_tag":null,"aes_auth_data":null}}');
+        $this->assertEquals($this->blockio->dynamicExtractKey($user_key, "deadbeef")->getPublicKey(), $user_key->public_key);
+    }
+
+    public function testDynamicExtractKeyAes256Cbc() {
+        $user_key = json_decode('{"encrypted_passphrase":"LExu1rUAtIBOekslc328Lw==","public_key":"02f87f787bffb30396984cb6b3a9d6830f32d5b656b3e39b0abe4f3b3c35d99323","algorithm":{"pbkdf2_salt":"922445847c173e90667a19d90729e1fb","pbkdf2_iterations":500000,"pbkdf2_hash_function":"SHA256","pbkdf2_phase1_key_length":16,"pbkdf2_phase2_key_length":32,"aes_iv":"11bc22166c8cf8560e5fa7e5c622bb0f","aes_cipher":"AES-256-CBC","aes_auth_tag":null,"aes_auth_data":null}}');
+        $this->assertEquals($this->blockio->dynamicExtractKey($user_key, "deadbeef")->getPublicKey(), $user_key->public_key);
+    }
+
+    public function testDynamicExtractKeyAes256Gcm() {
+        $user_key = json_decode('{"encrypted_passphrase":"ELV56Z57KoA=","public_key":"02f87f787bffb30396984cb6b3a9d6830f32d5b656b3e39b0abe4f3b3c35d99323","algorithm":{"pbkdf2_salt":"922445847c173e90667a19d90729e1fb","pbkdf2_iterations":500000,"pbkdf2_hash_function":"SHA256","pbkdf2_phase1_key_length":16,"pbkdf2_phase2_key_length":32,"aes_iv":"a57414b88b67f977829cbdca","aes_cipher":"AES-256-GCM","aes_auth_tag":"adeb7dfe53027bdda5824dc524d5e55a","aes_auth_data":""}}');
+        $this->assertEquals($this->blockio->dynamicExtractKey($user_key, "deadbeef")->getPublicKey(), $user_key->public_key);
+    }
 }
 
 ?>

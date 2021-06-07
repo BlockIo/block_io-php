@@ -35,7 +35,6 @@ class Client
     
     private $api_key;
     private $pin;
-    private $encryption_key;
     private $version;
     private $sweep_methods;
     private $network;
@@ -274,25 +273,14 @@ class Client
         if (!is_null($this->pin)) {
             // user provided a pin, so let's try to decrypt stuff
 
-            // get our encryption key ready
-            if (is_null($this->encryption_key))
-            {
-                $this->encryption_key = $this->pinToAesKey($this->pin);
-            }
-            
             if (property_exists($data->data, 'user_key') && !array_key_exists($data->data->user_key->public_key, $this->userKeys)) {
                 // the encrypted key is provided in the response, and we don't have the decrypted key yet
 
-                // decrypt the data
-                $passphrase = $this->decrypt($data->data->user_key->encrypted_passphrase, $this->encryption_key);
-                
-                // extract the key
-                $key = $this->initKey();
-                $key->fromPassphrase($passphrase);
-                
+                $key = $this->dynamicExtractKey($data->data->user_key, $this->pin);
+
                 // is this the right public key?
                 if ($key->getPublicKey() != $data->data->user_key->public_key) { throw new \Exception('Fail: Invalid Secret PIN provided.'); }
-                
+
                 $this->userKeys[$key->getPublicKey()] = $key; // $key is \BlockIo\BlockKey object
             }
 
@@ -403,6 +391,40 @@ class Client
         $response = $this->_request($name,$args);
 
         return $response;
+    }
+
+    public function dynamicExtractKey($user_key, $pin)
+    { // extracts user key by using the appropriate algorithm
+
+        $algorithm = json_decode("{\"pbkdf2_salt\":\"\",\"pbkdf2_iterations\":2048,\"pbkdf2_hash_function\":\"SHA256\",\"pbkdf2_phase1_key_length\":16,\"pbkdf2_phase2_key_length\":32,\"aes_iv\":null,\"aes_cipher\":\"AES-256-ECB\",\"aes_auth_tag\":null,\"aes_auth_data\":null}");
+
+        if (property_exists($user_key, 'algorithm')) {
+            $algorithm = $user_key->algorithm;
+        }
+
+        // get our encryption key ready
+        // pinToAesKey($pin, $iterations = 2048, $salt = "", $hash_function = "SHA256", $pbkdf2_phase1_key_length = 16, $pbkdf2_phase2_key_length = 32)
+        $encryption_key = $this->pinToAesKey($pin,
+                                             $algorithm->pbkdf2_iterations,
+                                             $algorithm->pbkdf2_salt,
+                                             $algorithm->pbkdf2_hash_function,
+                                             $algorithm->pbkdf2_phase1_key_length,
+                                             $algorithm->pbkdf2_phase2_key_length);
+        
+        // decrypt the data
+        // decrypt($b64ciphertext, $key, $cipher_type = "AES-256-ECB", $iv = NULL, $auth_tag = NULL, $auth_data = NULL)
+        $passphrase = $this->decrypt($user_key->encrypted_passphrase,
+                                     $encryption_key,
+                                     $algorithm->aes_cipher,
+                                     $algorithm->aes_iv,
+                                     $algorithm->aes_auth_tag,
+                                     $algorithm->aes_auth_data);
+        
+        // extract the key
+        $key = $this->initKey();
+        $key->fromPassphrase($passphrase);
+        
+        return $key;
     }
     
     public function initKey()
