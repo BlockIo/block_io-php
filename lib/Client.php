@@ -426,22 +426,41 @@ class Client
         return $nf;
     }
     
-    public function encrypt($data, $key)
-    { 
-        # encrypt using aes256ecb
-        # data is string, key is hex string (pbkdf2 with 2,048 iterations)
+    public function encrypt($data, $key, $cipher_type = "AES-256-ECB", $iv = null, $auth_data = null)
+    {
+        # encryption using AES-256-ECB, AES-256-CBC, AES-256-GCM
+        # data is string, key is hex string
         
         $key = hex2bin($key); // convert the hex into binary
         
         if (strlen($data) % 8 != 0) {
             throw new \Exception("Invalid data length: " . strlen($data));
         }
+
+        $response = [
+            "aes_iv" => $iv,
+            "aes_cipher_text" => null,
+            "aes_auth_tag" => null,
+            "aes_auth_data" => $auth_data,
+            "aes_cipher" => $cipher_type
+        ];
         
-        $ciphertext = openssl_encrypt($data, 'AES-256-ECB', $key, true);
-        
-        $ciphertext_base64 = base64_encode($ciphertext);
-        
-        return $ciphertext_base64;
+        $ciphertext = null;
+
+        if ($cipher_type == "AES-256-ECB") {                    
+            $response["aes_cipher_text"] = openssl_encrypt($data, $cipher_type, $key, OPENSSL_RAW_DATA);
+        } elseif ($cipher_type == "AES-256-CBC") {
+            $response["aes_cipher_text"] = openssl_encrypt($data, $cipher_type, $key, OPENSSL_RAW_DATA, hex2bin($iv));
+        } elseif ($cipher_type == "AES-256-GCM") {
+            $response["aes_cipher_text"] = openssl_encrypt($data, $cipher_type, $key, OPENSSL_NO_PADDING, hex2bin($iv), $response["aes_auth_tag"], $auth_data);
+            $response["aes_auth_tag"] = bin2hex($response["aes_auth_tag"]);
+        } else {
+            throw new \Exception("Unsupported cipher " . $cipher_type);
+        }
+
+        $response["aes_cipher_text"] = base64_encode($response["aes_cipher_text"]);
+
+        return $response;
     }
     
     
@@ -454,15 +473,30 @@ class Client
         return $enc_key_32;
     }   
     
-    public function decrypt($b64ciphertext, $key)
+    public function decrypt($b64ciphertext, $key, $cipher_type = "AES-256-ECB", $iv = NULL, $auth_tag = NULL, $auth_data = NULL)
     {
         # data must be in base64 string, $key is binary of hashed pincode
         
         $key = hex2bin($key); // convert the hex into binary
         
         $ciphertext_dec = base64_decode($b64ciphertext);
+
+        $data_dec = null;
         
-        $data_dec = openssl_decrypt($ciphertext_dec, 'AES-256-ECB', $key, OPENSSL_RAW_DATA, NULL);
+        if ($cipher_type == "AES-256-ECB") {
+            $data_dec = openssl_decrypt($ciphertext_dec, $cipher_type, $key, OPENSSL_RAW_DATA, NULL);
+        } elseif ($cipher_type == "AES-256-CBC") {
+            $data_dec = openssl_decrypt($ciphertext_dec, $cipher_type, $key, OPENSSL_RAW_DATA, hex2bin($iv));            
+        } elseif ($cipher_type == "AES-256-GCM") {
+
+            if (strlen($auth_tag) != 32) {
+                throw new \Exception("Auth tag must be 16 bytes exactly.");
+            }
+            
+            $data_dec = openssl_decrypt($ciphertext_dec, $cipher_type, $key, OPENSSL_NO_PADDING, hex2bin($iv), hex2bin($auth_tag), $auth_data);
+        } else {
+            throw new \Exception("Unsupported cipher " . $cipher_type);
+        }
         
         return $data_dec; // plain text
         
