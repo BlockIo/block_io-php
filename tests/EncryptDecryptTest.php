@@ -35,6 +35,12 @@ class EncryptDecryptTest extends TestCase
     {
         $this->assertEquals($this->aes_key, "b87ddac3d84865782a0edbc21b5786d56795dd52bab0fe49270b3726372a83fe");
     }
+
+    public function testPinToAesKeyWithSalt()
+    {
+        $this->assertEquals($this->blockio->pinToAesKey("deadbeef", 500000, "922445847c173e90667a19d90729e1fb", "SHA256", 16, 32),
+                            "f206403c6bad20e1c8cb1f3318e17cec5b2da0560ed6c7b26826867452534172");
+    }
     
 }
 

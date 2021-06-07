@@ -426,35 +426,6 @@ class Client
         return $nf;
     }
     
-    private function pbkdf2($password, $key_length, $salt = "", $rounds = 1024, $a = 'sha256') 
-    { // PBKDF2 function adaptation for Block.io
-        
-        // Derived key 
-        $dk = '';
-        
-        // Create key 
-        for ($block=1; $block<=$key_length; $block++) 
-        { 
-            // Initial hash for this block 
-            $ib = $h = hash_hmac($a, $salt . pack('N', $block), $password, true); 
-            
-            // Perform block iterations 
-            for ($i=1; $i<$rounds; $i++) 
-            { 
-                // XOR each iteration
-                $ib ^= ($h = hash_hmac($a, $h, $password, true)); 
-            } 
-            
-            // Append iterated block 
-            $dk .= $ib;
-        } 
-        
-        // Return derived key of correct length 
-        $key = substr($dk, 0, $key_length);
-        return bin2hex($key);
-    }
-    
-    
     public function encrypt($data, $key)
     { 
         # encrypt using aes256ecb
@@ -474,11 +445,11 @@ class Client
     }
     
     
-    public function pinToAesKey($pin)
+    public function pinToAesKey($pin, $iterations = 2048, $salt = "", $hash_function = "SHA256", $pbkdf2_phase1_key_length = 16, $pbkdf2_phase2_key_length = 32)
     { // converts the given Secret PIN to an Encryption Key
-        
-        $enc_key_16 = $this->pbkdf2($pin,16);
-        $enc_key_32 = $this->pbkdf2($enc_key_16,32);
+
+        $enc_key_16 = hash_pbkdf2(strtolower($hash_function), $pin, $salt, $iterations/2, $pbkdf2_phase1_key_length * 2, false);
+        $enc_key_32 = hash_pbkdf2(strtolower($hash_function), $enc_key_16, $salt, $iterations/2, $pbkdf2_phase2_key_length * 2, false);
         
         return $enc_key_32;
     }   
