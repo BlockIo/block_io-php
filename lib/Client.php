@@ -448,11 +448,11 @@ class Client
         $ciphertext = null;
 
         if ($cipher_type == "AES-256-ECB") {                    
-            $response["aes_cipher_text"] = openssl_encrypt($data, $cipher_type, $key, OPENSSL_RAW_DATA);
+            $response["aes_cipher_text"] = openssl_encrypt($data, strtolower($cipher_type), $key, OPENSSL_RAW_DATA);
         } elseif ($cipher_type == "AES-256-CBC") {
-            $response["aes_cipher_text"] = openssl_encrypt($data, $cipher_type, $key, OPENSSL_RAW_DATA, hex2bin($iv));
+            $response["aes_cipher_text"] = openssl_encrypt($data, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, hex2bin($iv));
         } elseif ($cipher_type == "AES-256-GCM") {
-            $response["aes_cipher_text"] = openssl_encrypt($data, $cipher_type, $key, OPENSSL_NO_PADDING, hex2bin($iv), $response["aes_auth_tag"], $auth_data);
+            $response["aes_cipher_text"] = openssl_encrypt($data, strtolower($cipher_type), $key, OPENSSL_NO_PADDING, hex2bin($iv), $response["aes_auth_tag"], $auth_data);
             $response["aes_auth_tag"] = bin2hex($response["aes_auth_tag"]);
         } else {
             throw new \Exception("Unsupported cipher " . $cipher_type);
@@ -484,16 +484,16 @@ class Client
         $data_dec = null;
         
         if ($cipher_type == "AES-256-ECB") {
-            $data_dec = openssl_decrypt($ciphertext_dec, $cipher_type, $key, OPENSSL_RAW_DATA, NULL);
+            $data_dec = openssl_decrypt($ciphertext_dec, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, NULL);
         } elseif ($cipher_type == "AES-256-CBC") {
-            $data_dec = openssl_decrypt($ciphertext_dec, $cipher_type, $key, OPENSSL_RAW_DATA, hex2bin($iv));            
+            $data_dec = openssl_decrypt($ciphertext_dec, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, hex2bin($iv));            
         } elseif ($cipher_type == "AES-256-GCM") {
 
             if (strlen($auth_tag) != 32) {
                 throw new \Exception("Auth tag must be 16 bytes exactly.");
             }
             
-            $data_dec = openssl_decrypt($ciphertext_dec, $cipher_type, $key, OPENSSL_NO_PADDING, hex2bin($iv), hex2bin($auth_tag), $auth_data);
+            $data_dec = openssl_decrypt($ciphertext_dec, strtolower($cipher_type), $key, OPENSSL_NO_PADDING, hex2bin($iv), hex2bin($auth_tag), $auth_data);
         } else {
             throw new \Exception("Unsupported cipher " . $cipher_type);
         }
