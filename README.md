@@ -1,7 +1,7 @@
 Block.io PHP
 ===========
 
-**Current Release**: 2.0.2
+**Current Release**: 2.0.2  
 **06/09/21**: Minor. Adds support for dynamic decryption algorithms.  
 **06/01/21**: Maintenance release. Fix Windows missing CACERT error.  
 **05/27/21**: BREAKING CHANGES. Transaction interfaces have changed. Test thoroughly before use.  
