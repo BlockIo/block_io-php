@@ -181,7 +181,17 @@ class PrepareTransactionTest extends TestCase
         $this->assertEquals($create_and_sign_transaction_response, $response);
 
     }
-    
+
+    public function testWitnessV1Output() {
+        // test for witness_v1 output
+
+        $prepare_transaction_response = json_decode(file_get_contents(__DIR__ . "/Data/json/prepare_transaction_response_witness_v1_output.json"), false);
+        $create_and_sign_transaction_response = json_decode(file_get_contents(__DIR__ . "/Data/json/create_and_sign_transaction_response_witness_v1_output.json"), true);
+        
+        $response = $this->blockio->create_and_sign_transaction($prepare_transaction_response);
+        $this->assertEquals($create_and_sign_transaction_response, $response);
+        
+    }
 }
 
 ?>
