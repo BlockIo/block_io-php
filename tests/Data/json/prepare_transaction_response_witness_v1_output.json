@@ -1,0 +1,64 @@
+{
+  "status": "success",
+  "data": {
+    "network": "BTCTEST",
+    "tx_type": "basic",
+    "inputs": [
+      {
+        "input_index": 0,
+        "previous_txid": "5fe41d63872f6d724f2a703597885d3a19df8f13cdaa7ea9b8f94f869bcc4e78",
+        "previous_output_index": 1,
+        "input_value": "0.00060915",
+        "spending_address": "2MsU2DsvP7okZ2sZGZUvH3rZZuQt4pf75Am"
+      }
+    ],
+    "outputs": [
+      {
+        "output_index": 0,
+        "output_category": "user-specified",
+        "output_value": "0.00020000",
+        "receiving_address": "tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c"
+      },
+      {
+        "output_index": 1,
+        "output_category": "user-specified",
+        "output_value": "0.00020000",
+        "receiving_address": "tb1qqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesrxh6hy"
+      },
+      {
+        "output_index": 2,
+        "output_category": "change",
+        "output_value": "0.00019615",
+        "receiving_address": "2MsU2DsvP7okZ2sZGZUvH3rZZuQt4pf75Am"
+      }
+    ],
+    "input_address_data": [
+      {
+        "required_signatures": 2,
+        "public_keys": [
+          "021916c1ea9215990263e2862bcecc85397d199a4411c863983176ee3d44e27f7f",
+          "02d2cbf77287c1443759abdd35f239e7da2f52c992258653bc8dd577ae63c78628"
+        ],
+        "address": "2MsU2DsvP7okZ2sZGZUvH3rZZuQt4pf75Am",
+        "address_type": "P2WSH-over-P2SH"
+      }
+    ],
+    "user_key": {
+      "public_key": "02d2cbf77287c1443759abdd35f239e7da2f52c992258653bc8dd577ae63c78628",
+      "encrypted_passphrase": "jlPuw8CJGTWTb+O4I/IKGWGDdF9G8/MX5meX+IfuLfbb7rRABoSUGYSU2BXxxRqR95K64u8gH46h3zr/NKsj8OFv5gj4JwClM7RN03fvb+3CyXgwy4eYSSpFE6vVsdyoxJ8rshUbpf8tvCerUKC0LhE9d61q7mWYoVAik61WRwc=",
+      "algorithm": {
+        "pbkdf2_salt": "7ccf40ce398f0fb475fe91043f7dce57",
+        "pbkdf2_iterations": 102400,
+        "pbkdf2_hash_function": "SHA256",
+        "pbkdf2_phase1_key_length": 16,
+        "pbkdf2_phase2_key_length": 32,
+        "aes_iv": "7c69a5e81e53ba05213b35bb",
+        "aes_cipher": "AES-256-GCM",
+        "aes_auth_tag": "d19b5e48e068f3b1179a4724b3862650",
+        "aes_auth_data": ""
+      }
+    },
+    "estimated_tx_size": 260,
+    "expected_unsigned_txid": "e1925681c6986df2617d41c90b2bbc32cd01f7df0323ca52417b4a8677b2a160"
+  }
+}
