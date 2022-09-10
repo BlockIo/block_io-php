@@ -1,7 +1,8 @@
 Block.io PHP
 ===========
 
-**Current Release**: 2.0.2  
+**Current Release**: 3.0.0  
+**09/10/22**: Support PHP 8.0 and PHP 8.1 only. Simplify dependency to use `doersf/bitcoin-php` package.  
 **06/09/21**: Minor. Adds support for dynamic decryption algorithms.  
 **06/01/21**: Maintenance release. Fix Windows missing CACERT error.  
 **05/27/21**: BREAKING CHANGES. Transaction interfaces have changed. Test thoroughly before use.  
@@ -10,7 +11,7 @@ PHP wrapper for [Block.io](https://block.io/) for use with [Dogecoin](http://dog
 
 ### Requirements
 
-This library requires: gmp, cURL, mbstring, and bcmath extensions. PHP7.2, PHP7.3, PHP7.4, or PHP8.0.
+This library requires: gmp, cURL, mbstring, and bcmath extensions. Tested on PHP `8.0`, and PHP `8.1`.
 
 ### Warning
 
@@ -18,8 +19,14 @@ Make sure all PHPUnit tests pass before using this library on your system.
 
 ### Usage
 
-Install via [Composer](https://getcomposer.org/)
+For PHP `8.0+`, install via [Composer](https://getcomposer.org/):  
+```sh
+$ composer require block_io-php/block_io-php
+```
 
+For PHP `7.2, 7.3, 7.4`, use `v2.0.2` of this library. Install via [Composer](https://getcomposer.org/):  
+
+Your `composer.json` will include the forked `bitcoin-php` repository specification:  
 ```sh
 {
     "require":{

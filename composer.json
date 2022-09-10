@@ -6,19 +6,13 @@
     "homepage": "https://block.io",
     "type": "library",
     "require": {
-        "php": ">=7.2",
-	"bitwasp/bitcoin": "dev-minimal",
+        "php": ">=8.0",
+	"doersf/bitcoin-php": "^2.0",
         "ext-gmp": "*",
         "ext-curl": "*",
 	"ext-bcmath": "*",
 	"ext-mbstring": "*"
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/doersf/bitcoin-php.git"
-        }
-    ],
     "autoload": {
         "psr-4": {
 	    "BlockIo\\": "lib"
