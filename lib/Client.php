@@ -448,7 +448,7 @@ class Client
         return $nf;
     }
     
-    public function encrypt($data, $key, $cipher_type = "AES-256-ECB", $iv = null, $auth_data = null)
+    public function encrypt($data, $key, $cipher_type = "AES-256-ECB", $iv = "", $auth_data = null)
     {
         # encryption using AES-256-ECB, AES-256-CBC, AES-256-GCM
         # data is string, key is hex string
@@ -495,7 +495,7 @@ class Client
         return $enc_key_32;
     }   
     
-    public function decrypt($b64ciphertext, $key, $cipher_type = "AES-256-ECB", $iv = NULL, $auth_tag = NULL, $auth_data = NULL)
+    public function decrypt($b64ciphertext, $key, $cipher_type = "AES-256-ECB", $iv = "", $auth_tag = NULL, $auth_data = NULL)
     {
         # data must be in base64 string, $key is binary of hashed pincode
         
