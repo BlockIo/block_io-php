@@ -470,7 +470,7 @@ class Client
         $ciphertext = null;
 
         if ($cipher_type == "AES-256-ECB") {                    
-            $response["aes_cipher_text"] = openssl_encrypt($data, strtolower($cipher_type), $key, OPENSSL_RAW_DATA);
+            $response["aes_cipher_text"] = openssl_encrypt($data, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, hex2bin($iv));
         } elseif ($cipher_type == "AES-256-CBC") {
             $response["aes_cipher_text"] = openssl_encrypt($data, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, hex2bin($iv));
         } elseif ($cipher_type == "AES-256-GCM") {
@@ -504,9 +504,9 @@ class Client
         $ciphertext_dec = base64_decode($b64ciphertext);
 
         $data_dec = null;
-        
+
         if ($cipher_type == "AES-256-ECB") {
-            $data_dec = openssl_decrypt($ciphertext_dec, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, NULL);
+            $data_dec = openssl_decrypt($ciphertext_dec, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, hex2bin($iv));
         } elseif ($cipher_type == "AES-256-CBC") {
             $data_dec = openssl_decrypt($ciphertext_dec, strtolower($cipher_type), $key, OPENSSL_RAW_DATA, hex2bin($iv));            
         } elseif ($cipher_type == "AES-256-GCM") {
