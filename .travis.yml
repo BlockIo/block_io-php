@@ -5,7 +5,6 @@ dist: focal
 php:
 - '8.0'
 - '8.1'
-- '8.2.0-dev'
 
 script:
 - composer install
