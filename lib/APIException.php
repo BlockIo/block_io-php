@@ -1,6 +1,6 @@
 <?php
 
-namespace BlockIo;
+namespace BlockIo;masi81
 
 class APIException extends \Exception
 {
