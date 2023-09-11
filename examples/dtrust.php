@@ -87,7 +87,7 @@ echo "**** Destination Address: " . $destAddress . PHP_EOL;
 
 // let's withdraw coins from the dTrust address into the $destAddress
 // note that for dTrust, the endpoint if prepare_dtrust_transaction, not prepare_transaction
-$prepare_transaction_response = $block_io->prepare_dtrust_transaction(array('from_labels' => 'dTrust1', 'to_address' => $destAddress, 'amount' => '0.0009'));
+$prepare_transaction_response = $block_io->prepare_dtrust_transaction(array('from_labels' => 'dTrust1', 'to_address' => $destAddress, 'amount' => '1009'));
 
 // we're going to sign with just 3 of our keys, and then Block.io will sign with its key
 // alternatively, you can sign with all 4 of your keys and then either broadcast the transaction through Block.io or anywhere else you prefer
