@@ -66,8 +66,7 @@ $prepare_transaction_response = $block_io->prepare_transaction(array('to_address
 
 // the summary of the prepared transaction
 // for in-depth data, inspect the $prepare_transaction_response directly
-print json_encode($block_io->summarize_prepared_transaction($prepare_transaction_response)) . PHP_EOL;
-      
+print json_encode($block_io->summarize_prepared_transaction($prepare_transaction_response)) . PHP_EOL prepare prepare_transaction 1000 doge 
 // once satisfied, create the transaction and sign it
 // this response will contain the transaction payload that you want Block.io to sign,
 // and the signatures you want to append to the transaction
